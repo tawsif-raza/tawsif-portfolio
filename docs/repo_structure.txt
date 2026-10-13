@@ -1,0 +1,61 @@
+jarvyhq-portfolio/
+├── .gitignore
+├── .oxlintrc.json
+├── README.md
+├── STATUS.md
+├── index.html
+├── package.json
+├── package-lock.json
+├── vite.config.js
+├── docs/
+│   └── repo_structure.txt
+├── public/
+│   ├── favicon.svg
+│   ├── project-highland.jpg
+│   ├── project-outbound.jpg
+│   ├── project-video.jpg
+│   └── project-voice.jpg
+├── scripts/
+│   └── fetch-github-activity.mjs
+└── src/
+    ├── App.jsx
+    ├── index.css
+    ├── main.jsx
+    ├── assets/
+    │   ├── hero.png
+    │   ├── react.svg
+    │   └── vite.svg
+    ├── components/
+    │   ├── AgentGraph.jsx
+    │   ├── Atmosphere.jsx
+    │   ├── CapabilityStrip.jsx
+    │   ├── CommandPalette.jsx
+    │   ├── CustomCursor.jsx
+    │   ├── GithubActivity.jsx
+    │   ├── IntroCounter.jsx
+    │   ├── Magnetic.jsx
+    │   ├── Nav.jsx
+    │   ├── NowPanel.jsx
+    │   ├── ParticleNetwork.jsx
+    │   ├── ProjectCard.jsx
+    │   ├── ProjectGlyph.jsx
+    │   ├── RevealText.jsx
+    │   ├── RoleCycler.jsx
+    │   ├── ScrollProgress.jsx
+    │   └── SectionLabel.jsx
+    ├── data/
+    │   └── github-activity.json
+    └── sections/
+        ├── About.jsx
+        ├── ArchitectureShowcase.jsx
+        ├── ClosingCta.jsx
+        ├── Contact.jsx
+        ├── CurrentFocus.jsx
+        ├── EngineeringImpact.jsx
+        ├── EngineeringMethodology.jsx
+        ├── Footer.jsx
+        ├── Hero.jsx
+        ├── Projects.jsx
+        ├── Services.jsx
+        ├── Skills.jsx
+        └── TechStack.jsx
