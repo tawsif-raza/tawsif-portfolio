@@ -1,7 +1,8 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import SectionLabel from "../components/SectionLabel";
 import RevealText from "../components/RevealText";
 import { canGoFullGL } from "../utils/canGoFullGL";
+import useNearViewport from "../hooks/useNearViewport";
 
 const LivingSystemScene = lazy(() => import("../components/LivingSystemScene"));
 
@@ -138,6 +139,8 @@ export default function ArchitectureShowcase() {
   const [selectedNodeIndex, setSelectedNodeIndex] = useState(0);
 
   const [fullGL] = useState(canGoFullGL);
+  const sceneRef = useRef();
+  const sceneNear = useNearViewport(sceneRef);
   const currentArch = ARCHITECTURES[selectedArchIndex];
   const currentNode = currentArch.nodes[selectedNodeIndex] || currentArch.nodes[0];
 
@@ -237,14 +240,16 @@ export default function ArchitectureShowcase() {
             as before and remain the primary, always-available way to
             read this section. */}
         {fullGL && (
-          <div className="mb-8 h-48 overflow-hidden rounded-lg border border-line/50 bg-[#0d0f12] sm:h-56">
-            <Suspense fallback={null}>
-              <LivingSystemScene
-                nodes={sceneNodes}
-                edges={sceneEdges}
-                highlightIds={[currentNode.id]}
-              />
-            </Suspense>
+          <div ref={sceneRef} className="mb-8 h-48 overflow-hidden rounded-lg border border-line/50 bg-[#0d0f12] sm:h-56">
+            {sceneNear && (
+              <Suspense fallback={null}>
+                <LivingSystemScene
+                  nodes={sceneNodes}
+                  edges={sceneEdges}
+                  highlightIds={[currentNode.id]}
+                />
+              </Suspense>
+            )}
           </div>
         )}
 

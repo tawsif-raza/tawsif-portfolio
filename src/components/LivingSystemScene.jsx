@@ -96,7 +96,10 @@ export default function LivingSystemScene({ nodes: nodesProp, edges: edgesProp, 
       style={{ width: "100%", height: "100%", position: "relative" }}
     >
       <div aria-hidden="true" style={{ width: "100%", height: "100%" }}>
-        <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]}>
+        {/* frameloop: R3F's default "always" keeps drawing the scene every
+            frame even when `active` has frozen the animation and the canvas
+            is off-screen. Off-screen it now draws nothing at all. */}
+        <Canvas camera={{ position: [0, 0, 6], fov: 45 }} dpr={[1, 2]} frameloop={inView ? "always" : "never"}>
           <Scene
             nodes={nodes}
             edges={edges}

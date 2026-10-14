@@ -9,11 +9,25 @@ const LINKS = [
   { href: "#contact", label: "Contact", id: "contact" },
 ];
 
+// Scroll position never goes through React state here: the scroll handler
+// writes the header's data-scrolled flag and each link's aria-current/accent
+// straight to the DOM, so scrolling the page never re-renders Nav.
+function markActive(root, id) {
+  if (!root) return;
+  root.querySelectorAll("a[data-nav-id]").forEach((a) => {
+    const on = a.dataset.navId === id;
+    a.classList.toggle("text-accent", on);
+    if (a.classList.contains("mobile-nav-link")) a.classList.toggle("text-paper", !on);
+    if (on) a.setAttribute("aria-current", "location");
+    else a.removeAttribute("aria-current");
+  });
+}
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState(null);
+  const headerRef = useRef();
   const mobileMenuRef = useRef();
+  const activeRef = useRef(null);
 
   useEffect(() => {
     const REFERENCE_LINE = 160;
@@ -48,7 +62,7 @@ export default function Nav() {
       const isScrolled = scrollY > 40;
       if (isScrolled !== prevScrolled) {
         prevScrolled = isScrolled;
-        setScrolled(isScrolled);
+        if (headerRef.current) headerRef.current.dataset.scrolled = String(isScrolled);
       }
 
       let current = cachedOffsets[0].id;
@@ -61,7 +75,9 @@ export default function Nav() {
 
       if (current !== prevActive) {
         prevActive = current;
-        setActive(current);
+        activeRef.current = current;
+        markActive(headerRef.current, current);
+        markActive(mobileMenuRef.current, current);
       }
     };
 
@@ -105,6 +121,7 @@ export default function Nav() {
   // GSAP stagger animation for mobile menu
   useEffect(() => {
     if (!open || !mobileMenuRef.current) return;
+    markActive(mobileMenuRef.current, activeRef.current);
     const links = mobileMenuRef.current.querySelectorAll(".mobile-nav-link");
     gsap.fromTo(
       links,
@@ -115,10 +132,12 @@ export default function Nav() {
 
   return (
     <>
+      {/* Solid fill once scrolled. A backdrop-blur on a fixed bar re-blurs
+          whatever scrolls under it on every frame, including the videos. */}
       <header
-        className={`fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 py-5 transition-all duration-300 md:px-16 lg:px-24 ${
-          scrolled ? "bg-bg/80 backdrop-blur-md" : "bg-transparent"
-        }`}
+        ref={headerRef}
+        data-scrolled="false"
+        className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-transparent px-6 py-5 transition-colors duration-300 data-[scrolled=true]:bg-bg/95 md:px-16 lg:px-24"
       >
         <a href="#hero" className="font-display text-sm font-medium text-paper">
           T.R.K
@@ -127,14 +146,7 @@ export default function Nav() {
         <div className="flex items-center gap-5">
           <nav className="hidden gap-7 font-mono text-[11px] tracking-wide text-dim sm:flex">
             {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                aria-current={active === l.id ? "location" : undefined}
-                className={`nav-link transition hover:text-accent ${
-                  active === l.id ? "text-accent" : ""
-                }`}
-              >
+              <a key={l.href} href={l.href} data-nav-id={l.id} className="nav-link transition hover:text-accent">
                 {l.label}
               </a>
             ))}
@@ -164,17 +176,15 @@ export default function Nav() {
       {open && (
         <div
           ref={mobileMenuRef}
-          className="fixed inset-0 z-30 flex flex-col items-start justify-center gap-6 bg-bg/95 px-6 backdrop-blur-md sm:hidden"
+          className="fixed inset-0 z-30 flex flex-col items-start justify-center gap-6 bg-bg/[0.97] px-6 sm:hidden"
         >
           {LINKS.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              aria-current={active === l.id ? "location" : undefined}
-              className={`mobile-nav-link font-display text-3xl font-medium transition hover:text-accent ${
-                active === l.id ? "text-accent" : "text-paper"
-              }`}
+              data-nav-id={l.id}
+              className="mobile-nav-link font-display text-3xl font-medium text-paper transition hover:text-accent"
             >
               {l.label}
             </a>

@@ -1,7 +1,8 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useRef, useState } from "react";
 import SectionLabel from "../components/SectionLabel";
 import RevealText from "../components/RevealText";
 import { canGoFullGL } from "../utils/canGoFullGL";
+import useNearViewport from "../hooks/useNearViewport";
 
 const LivingSystemScene = lazy(() => import("../components/LivingSystemScene"));
 
@@ -78,6 +79,10 @@ const PHASES = [
 export default function EngineeringMethodology() {
   const [activeStep, setActiveStep] = useState(0);
   const [fullGL] = useState(canGoFullGL);
+  // The three.js chunk (~240 kB gzip) and its WebGL context load only once
+  // this box is within ~a screen of view, not at page load.
+  const sceneRef = useRef();
+  const sceneNear = useNearViewport(sceneRef);
 
   return (
     <section
@@ -103,10 +108,12 @@ export default function EngineeringMethodology() {
           plain-text content above and below already fully explains
           every phase without it. */}
       {fullGL && (
-        <div className="mb-10 h-48 overflow-hidden rounded-lg border border-line/50 bg-[#0d0f12] sm:h-56">
-          <Suspense fallback={null}>
-            <LivingSystemScene highlightIds={PHASE_HIGHLIGHTS[activeStep]} />
-          </Suspense>
+        <div ref={sceneRef} className="mb-10 h-48 overflow-hidden rounded-lg border border-line/50 bg-[#0d0f12] sm:h-56">
+          {sceneNear && (
+            <Suspense fallback={null}>
+              <LivingSystemScene highlightIds={PHASE_HIGHLIGHTS[activeStep]} />
+            </Suspense>
+          )}
         </div>
       )}
 
