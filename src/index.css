@@ -1672,6 +1672,14 @@ a:focus-visible > .work-row {
 .glass-pill svg { color: var(--color-accent); }
 
 /* ─── Skills marquee ─── */
+/* Over the moving Skills films a live backdrop blur would be recomputed
+   every video frame; a static, more opaque fill looks the same at this size. */
+.skf .glass-pill {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background: linear-gradient(180deg, rgba(198, 244, 50, 0.08), rgba(198, 244, 50, 0.02)), rgba(12, 14, 17, 0.82);
+}
+
 .sk-script {
   font-family: "Cedarville Cursive", cursive;
   font-size: 20px;
@@ -1844,18 +1852,25 @@ a:focus-visible > .work-row {
   height: 100%;
   object-fit: cover;
   opacity: 0;
-  transform: scale(1.06);
-  /* blurred and darkened so the film reads as moving atmosphere behind the
-     real logos, and any lettering in the generated footage stays illegible */
-  filter: blur(9px) saturate(0.95) brightness(0.7);
+  /* own GPU layer so the crossfade and every decoded frame composite without
+     repainting the section */
+  transform: translate3d(0, 0, 0) scale(1.06);
+  backface-visibility: hidden;
+  will-change: opacity;
+  /* softened and darkened so the film reads as moving atmosphere behind the
+     real logos. The blur re-runs on every video frame, so it is kept small:
+     the 960x540 source upscaled to cover already softens lettering, and the
+     overlay below does the rest. */
+  filter: blur(4px) saturate(0.95) brightness(0.62);
   transition: opacity 1.4s ease-in-out;
 }
 .dual-video__media.is-on { opacity: 1; }
+/* Static semi-transparent wash. A plain alpha layer instead of
+   mix-blend-mode, which forced a blend pass against every video frame. */
 .dual-video__tint {
   position: absolute;
   inset: 0;
-  mix-blend-mode: color;
-  background: radial-gradient(80% 70% at 50% 55%, rgba(198, 244, 50, 0.16), rgba(58, 214, 195, 0.1) 60%, transparent 100%);
+  background: radial-gradient(80% 70% at 50% 55%, rgba(198, 244, 50, 0.07), rgba(58, 214, 195, 0.05) 60%, transparent 100%);
 }
 .dual-video__overlay {
   position: absolute;
@@ -1878,28 +1893,32 @@ a:focus-visible > .work-row {
   translate: -50% -50%;
   outline: none;
   animation: var(--path, float-a) var(--dur, 7s) ease-in-out var(--delay, 0s) infinite;
+  /* keep the drift on the compositor: the logo and its drop-shadow are
+     rasterised once and then only moved */
+  will-change: transform;
+  backface-visibility: hidden;
 }
 .float-logo--a { --path: float-a; }
 .float-logo--b { --path: float-b; }
 .float-logo--c { --path: float-c; }
 @keyframes float-a {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  33% { transform: translate(6px, -14px) rotate(2deg); }
-  66% { transform: translate(-5px, -6px) rotate(-1.5deg); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  33% { transform: translate3d(6px, -14px, 0) rotate(2deg); }
+  66% { transform: translate3d(-5px, -6px, 0) rotate(-1.5deg); }
 }
 @keyframes float-b {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  40% { transform: translate(-8px, -10px) rotate(-2deg); }
-  75% { transform: translate(4px, -16px) rotate(1deg); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  40% { transform: translate3d(-8px, -10px, 0) rotate(-2deg); }
+  75% { transform: translate3d(4px, -16px, 0) rotate(1deg); }
 }
 @keyframes float-c {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  30% { transform: translate(5px, 8px) rotate(1.5deg); }
-  65% { transform: translate(-6px, -10px) rotate(-1deg); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  30% { transform: translate3d(5px, 8px, 0) rotate(1.5deg); }
+  65% { transform: translate3d(-6px, -10px, 0) rotate(-1deg); }
 }
 .float-logo:hover,
 .float-logo:focus-visible { animation-play-state: paused; }
-.float-logo.is-still { animation: none; }
+.float-logo.is-still { animation: none; will-change: auto; }
 
 .float-logo__pop {
   display: grid;
@@ -2137,7 +2156,15 @@ form.is-launching .field { opacity: 0.45; transition: opacity 0.5s var(--ease-ou
   height: auto;
   max-height: calc(100svh - 120px);
   transform-origin: top center;
-  will-change: transform;
+  will-change: transform, opacity;
+  /* the card is opaque, so the inherited .work-card backdrop blur was pure
+     cost on seven moving layers */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  /* framer-motion writes transform every frame; a CSS transform transition
+     on top of that restarts each frame and makes the stack lag the scroll */
+  transition: border-color var(--duration-base) var(--ease-out),
+              box-shadow var(--duration-base) var(--ease-out);
   background: #0c0e11;
   border-color: rgba(198, 244, 50, 0.22);
   box-shadow: 0 -18px 50px -20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(198, 244, 50, 0.04);
@@ -2149,7 +2176,13 @@ form.is-launching .field { opacity: 0.45; transition: opacity 0.5s var(--ease-ou
   background: #050607;
   pointer-events: none;
 }
-.stack-card__media > img { aspect-ratio: 16 / 9; transform-origin: center; will-change: transform; }
+.stack-card__media > img {
+  aspect-ratio: 16 / 9;
+  transform-origin: center;
+  will-change: transform;
+  /* parallax is driven per frame by framer-motion; only ease the hover filter */
+  transition: filter 0.9s var(--ease-out);
+}
 .stack-card { transform-style: preserve-3d; backface-visibility: hidden; }
 @media (min-width: 900px) {
   .stack-card { flex-direction: row; min-height: 440px; }

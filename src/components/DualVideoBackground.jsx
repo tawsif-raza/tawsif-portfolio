@@ -52,6 +52,23 @@ export default function DualVideoBackground({ className = "" }) {
       return h;
     });
 
+    // Nothing downloads until the section is close to the viewport (the
+    // elements start at preload="none" and no autoplay).
+    const nearIo = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        nearIo.disconnect();
+        els.forEach((v) => {
+          v.preload = "auto";
+          // Raising preload resumes the deferred fetch in most browsers; only
+          // kick it by hand where it didn't, so nothing downloads twice.
+          if (v.networkState !== v.NETWORK_LOADING && v.readyState === 0) v.load();
+        });
+      },
+      { rootMargin: "600px 0px" }
+    );
+    nearIo.observe(rootRef.current);
+
     const io = new IntersectionObserver(
       ([e]) => {
         onScreen = e.isIntersecting;
@@ -68,6 +85,7 @@ export default function DualVideoBackground({ className = "" }) {
     document.addEventListener("visibilitychange", onVis);
 
     return () => {
+      nearIo.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
       els.forEach((v, i) => v.removeEventListener("timeupdate", handlers[i]));
@@ -86,11 +104,12 @@ export default function DualVideoBackground({ className = "" }) {
             className={`dual-video__media ${active === 0 ? "is-on" : ""}`}
             src={VIDEO_1_URL}
             poster={POSTER}
-            autoPlay
             loop
             muted
             playsInline
-            preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
+            preload="none"
           />
           <video
             ref={vids[1]}
@@ -99,7 +118,9 @@ export default function DualVideoBackground({ className = "" }) {
             loop
             muted
             playsInline
-            preload="auto"
+            disablePictureInPicture
+            disableRemotePlayback
+            preload="none"
           />
         </>
       )}
