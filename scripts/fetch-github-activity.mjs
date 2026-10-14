@@ -14,6 +14,8 @@ import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = join(__dirname, "..", "src", "data", "github-activity.json");
 const USERNAME = "tawsif-raza";
+// Repos that should never appear in the "recent activity" list.
+const EXCLUDED_REPOS = new Set(["jarvyhq-portfolio"]);
 
 async function main() {
   try {
@@ -38,7 +40,7 @@ async function main() {
       fetchedAt: new Date().toISOString(),
       publicRepos: profile.public_repos ?? null,
       recentRepos: repos
-        .filter((r) => !r.fork)
+        .filter((r) => !r.fork && !EXCLUDED_REPOS.has(r.name))
         .slice(0, 3)
         .map((r) => ({
           name: r.name,
