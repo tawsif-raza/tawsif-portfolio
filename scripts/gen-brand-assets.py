@@ -88,7 +88,6 @@ def make_og_image(path):
 
 
 if __name__ == "__main__":
-    make_icon(180, "public/apple-touch-icon.png")
-    make_icon(192, "public/icon-192.png")
-    make_icon(512, "public/icon-512.png")
+    # Icons now come from the TR monogram (scripts/gen-logo-assets.py);
+    # only the share image is still generated here.
     make_og_image("public/og-image.png")
