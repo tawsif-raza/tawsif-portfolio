@@ -325,41 +325,6 @@ button:focus-visible {
   transform: translateY(-2px);
 }
 
-/* ─── Scroll Progress Bar ─── */
-
-.scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  z-index: 50;
-  background: transparent;
-  pointer-events: none;
-}
-
-.scroll-progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-accent-dim), var(--color-accent));
-  transform-origin: left;
-  will-change: transform;
-}
-
-@supports (animation-timeline: scroll()) {
-  .scroll-progress-bar {
-    animation: scroll-progress-anim linear;
-    animation-timeline: scroll(root block);
-  }
-  @keyframes scroll-progress-anim {
-    from {
-      transform: scaleX(0);
-    }
-    to {
-      transform: scaleX(1);
-    }
-  }
-}
-
 /* ─── Pulsing Dot ─── */
 
 @keyframes pulse-dot {

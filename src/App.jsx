@@ -16,7 +16,6 @@ import CurrentFocus from "./sections/CurrentFocus";
 import ClosingCta from "./sections/ClosingCta";
 import IntroSequence from "./components/IntroSequence";
 import Nav from "./components/Nav";
-import ScrollProgress from "./components/ScrollProgress";
 import Atmosphere from "./components/Atmosphere";
 import CommandPalette from "./components/CommandPalette";
 import GithubActivity from "./components/GithubActivity";
@@ -31,7 +30,6 @@ export default function App() {
       <IntroSequence onComplete={() => setIntroDone(true)} />
       {introDone && (
         <>
-          <ScrollProgress />
           <Nav />
           <CommandPalette />
           <main className="relative z-10">
