@@ -20,8 +20,8 @@ import Atmosphere from "./components/Atmosphere";
 import CommandPalette from "./components/CommandPalette";
 import GithubActivity from "./components/GithubActivity";
 
-export default function App() {
-  const [introDone, setIntroDone] = useState(false);
+export default function App({ initialIntroDone = false }) {
+  const [introDone, setIntroDone] = useState(initialIntroDone);
 
   return (
     <div className="relative isolate min-h-screen w-full bg-bg">
