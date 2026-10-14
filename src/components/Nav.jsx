@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
+const LOGO = `${import.meta.env.BASE_URL}logo.png`;
+// Show the shortcut the visitor's keyboard actually has.
+const IS_MAC =
+  typeof navigator !== "undefined" &&
+  /mac|iphone|ipad|ipod/i.test(navigator.userAgentData?.platform || navigator.platform || navigator.userAgent);
+const MOD_KEY = IS_MAC ? "⌘" : "Ctrl";
+
 const LINKS = [
   { href: "#skills", label: "Skills", id: "skills" },
   { href: "#about", label: "About", id: "about" },
@@ -139,8 +146,24 @@ export default function Nav() {
         data-scrolled="false"
         className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-transparent px-6 py-5 transition-colors duration-300 data-[scrolled=true]:bg-bg/95 md:px-16 lg:px-24"
       >
-        <a href="#hero" className="font-display text-sm font-medium text-paper">
-          T.R.K
+        {/* Home link. The 32px logo is pulled in by -my-1.5 so the bar keeps
+            the height the old 20px "T.R.K" text gave it. width/height
+            reserve the box before the image loads, so nothing shifts. */}
+        <a
+          href="#hero"
+          className="group -my-1.5 inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+        >
+          <img
+            src={LOGO}
+            alt="Tawsif Raza Khan logo"
+            width={182}
+            height={128}
+            fetchPriority="high"
+            decoding="async"
+            draggable={false}
+            className="h-8 w-auto select-none transition duration-300 ease-out group-hover:drop-shadow-[0_0_8px_rgba(26,255,58,0.45)] group-focus-visible:drop-shadow-[0_0_8px_rgba(26,255,58,0.45)] motion-safe:group-hover:scale-105"
+          />
+          <span className="sr-only">, back to top</span>
         </a>
 
         <div className="flex items-center gap-5">
@@ -152,13 +175,20 @@ export default function Nav() {
             ))}
           </nav>
 
-          {/* Command palette trigger */}
+          {/* Command palette trigger: the way in for touch users and anyone
+              who doesn't know the shortcut. */}
           <button
+            type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("open-command-palette"))}
-            className="flex items-center gap-1.5 rounded-sm border border-line px-2.5 py-1 font-mono text-[10px] text-dim transition hover:border-accent hover:text-accent"
+            className="group flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 font-mono text-[10px] text-dim transition hover:border-accent/60 hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             aria-label="Open command palette"
+            aria-keyshortcuts={IS_MAC ? "Meta+K" : "Control+K"}
+            title={`Command palette (${MOD_KEY} K)`}
           >
-            <span aria-hidden="true">⌘K</span>
+            <span aria-hidden="true" className="text-faint transition group-hover:text-accent/70">[</span>
+            <kbd aria-hidden="true" className="font-mono">{MOD_KEY}</kbd>
+            <kbd aria-hidden="true" className="font-mono">K</kbd>
+            <span aria-hidden="true" className="text-faint transition group-hover:text-accent/70">]</span>
           </button>
 
           <button
