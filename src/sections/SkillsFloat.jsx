@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import GlassPill from "../components/GlassPill";
@@ -19,6 +19,33 @@ const SPOTS = [
   { x: 78, y: 76, d: 8.0, delay: -2.9, path: "c" },
   { x: 91, y: 38, d: 6.6, delay: -1.8, path: "a" },
 ];
+
+// One floating logo. The drift is a CSS keyframe on `transform` only, so it
+// runs on the compositor (see .float-logo in index.css). memo() keeps the
+// large inline SVG markup from being re-diffed if SkillsFloat ever re-renders.
+const FloatLogo = memo(function FloatLogo({ logo, spot, still }) {
+  return (
+    <li
+      className={`float-logo float-logo--${spot.path} ${still ? "is-still" : ""}`}
+      style={{
+        "--x": `${spot.x}%`,
+        "--y": `${spot.y}%`,
+        "--dur": `${spot.d}s`,
+        "--delay": `${spot.delay}s`,
+        "--glow": logo.glow,
+      }}
+      tabIndex={0}
+    >
+      <span className="float-logo__pop">
+        <span
+          className={`float-logo__img ${logo.wide ? "is-wide" : ""}`}
+          dangerouslySetInnerHTML={{ __html: logo.svg }}
+        />
+        <span className="float-logo__name">{logo.name}</span>
+      </span>
+    </li>
+  );
+});
 
 export default function SkillsFloat() {
   const rootRef = useRef();
@@ -51,31 +78,9 @@ export default function SkillsFloat() {
         </div>
 
         <ul className="float-field mt-12 md:mt-6" aria-label="Tech stack">
-          {FLOAT_LOGOS.map((l, i) => {
-            const s = SPOTS[i % SPOTS.length];
-            return (
-              <li
-                key={l.name}
-                className={`float-logo float-logo--${s.path} ${reducedMotion ? "is-still" : ""}`}
-                style={{
-                  "--x": `${s.x}%`,
-                  "--y": `${s.y}%`,
-                  "--dur": `${s.d}s`,
-                  "--delay": `${s.delay}s`,
-                  "--glow": l.glow,
-                }}
-                tabIndex={0}
-              >
-                <span className="float-logo__pop">
-                  <span
-                    className={`float-logo__img ${l.wide ? "is-wide" : ""}`}
-                    dangerouslySetInnerHTML={{ __html: l.svg }}
-                  />
-                  <span className="float-logo__name">{l.name}</span>
-                </span>
-              </li>
-            );
-          })}
+          {FLOAT_LOGOS.map((l, i) => (
+            <FloatLogo key={l.name} logo={l} spot={SPOTS[i % SPOTS.length]} still={reducedMotion} />
+          ))}
         </ul>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { memo, useRef } from "react";
 import { motion, useScroll, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import SectionLabel from "../components/SectionLabel";
 import RevealText from "../components/RevealText";
@@ -125,7 +125,9 @@ const SPRING = { stiffness: 100, damping: 20, restDelta: 0.001 };
 // - Push-back: while the NEXT card slides over it, it scales to 0.95 and fades
 //   to ~45%, like a camera racking focus onto the new card.
 // - Parallax: the image drifts on Y inside its frame as the slot moves.
-function StackCard({ project, index, total, progress, reduce }) {
+// memo(): props are a static project object plus stable MotionValues, so the
+// cards stay inert even if something above them re-renders.
+const StackCard = memo(function StackCard({ project, index, total, progress, reduce }) {
   const unit = 1 / (total + 1);
   const entryStart = index * unit;
   const entryEnd = entryStart + unit;
@@ -204,7 +206,7 @@ function StackCard({ project, index, total, progress, reduce }) {
       </motion.article>
     </div>
   );
-}
+});
 
 export default function Projects() {
   const stackRef = useRef(null);
