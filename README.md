@@ -4,7 +4,7 @@
 
 **A dark, motion-heavy one-page portfolio for an AI/ML engineer who builds agentic systems.**
 
-[![Live site](https://img.shields.io/badge/live-amplifyapp.com-c6f432?style=for-the-badge&labelColor=08090b)](https://main.d31cxcwox3ykwe.amplifyapp.com/)
+![Status](https://img.shields.io/badge/status-not%20deployed%20yet-c6f432?style=for-the-badge&labelColor=08090b)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white&labelColor=08090b)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=white&labelColor=08090b)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=08090b)
@@ -97,7 +97,7 @@ The page is made of sections, shown here in the order they appear on the site.
 | Icons | **lucide-react** + inline SVG logos | UI icons and brand logos. |
 | Linting | **oxlint** | A very fast code checker. |
 | Contact form | **Formspree** | Receives form posts, so no backend is needed. |
-| Hosting | **AWS Amplify** | Builds and serves the site. |
+| Hosting | *Not deployed yet* | Any static host works. See [Deploying](#8-deploying). |
 
 > **Node.js 20.19+ or 22.12+ is required.** Vite 8 will not run on older versions.
 
@@ -149,7 +149,7 @@ tawsif-portfolio/
 │   ├── project-*.jpg           #   One screenshot per project card
 │   ├── favicon.svg, icon-*.png #   Icons for browsers and phones
 │   ├── og-image.png            #   Preview image shown when the link is shared
-│   └── manifest.json, robots.txt, sitemap.xml
+│   └── manifest.json, robots.txt
 │
 ├── scripts/
 │   ├── fetch-github-activity.mjs   # Runs before every build (see section 6)
@@ -167,7 +167,7 @@ tawsif-portfolio/
     ├── data/                   # Logos, graph data, github-activity.json
     ├── hooks/                  # useReducedMotion, useInViewport, useNearViewport
     ├── utils/                  # canGoFullGL (is this device strong enough for 3D?)
-    └── dev/                    # Developer-only experiments (not on the live site)
+    └── dev/                    # Developer-only experiments (not part of the real site)
 ```
 
 **Rule of thumb:** a *section* is a big block of the page, and a *component* is a small piece used inside sections. To change the **order** of the page, edit `src/App.jsx`. To change the **content** of a block, edit its file in `src/sections/`.
@@ -178,14 +178,16 @@ tawsif-portfolio/
 
 ### From code to website
 
+The site is **not deployed yet**. Once you connect a host (see [section 8](#8-deploying)), this is what will happen on every push:
+
 ```mermaid
 flowchart LR
     A["You edit code<br/>in src/"] --> B["git push<br/>to main"]
-    B --> C["AWS Amplify<br/>starts a build"]
+    B --> C["Your hosting service<br/>starts a build"]
     C --> D["npm run build"]
     D --> E["prebuild: fetch my<br/>latest GitHub repos"]
     E --> F["Vite bundles the site<br/>into dist/"]
-    F --> G["Amplify serves dist/<br/>main.d31cxcwox3ykwe.amplifyapp.com"]
+    F --> G["The host serves dist/<br/>at your domain"]
 ```
 
 ### What happens when someone opens the site
@@ -351,32 +353,47 @@ const USERNAME = "tawsif-raza";
 
 ## 8. Deploying
 
-The live site runs on **AWS Amplify**, at <https://main.d31cxcwox3ykwe.amplifyapp.com/>. Pushing to `main` is what starts a new build.
+**The site is not deployed yet.** There is no live URL and no domain. This section is the plan for the first deploy.
 
-This repo has no `amplify.yml`, so Amplify's auto-detected build settings are used. They need to behave like this: install packages, run `npm run build`, and publish the **`dist`** folder. If you ever need to set that explicitly, this `amplify.yml` in the repo root does it:
+### Build settings (the same on every host)
 
-```yaml
-version: 1
-frontend:
-  phases:
-    preBuild:
-      commands:
-        - npm ci
-    build:
-      commands:
-        - npm run build
-  artifacts:
-    baseDirectory: dist
-    files:
-      - '**/*'
-  cache:
-    paths:
-      - node_modules/**/*
-```
+Every static host asks the same three questions:
 
-**Other hosts work too.** Netlify, Vercel and Cloudflare Pages all use the same recipe: build command `npm run build`, output folder `dist`.
+| Setting | Value |
+| :--- | :--- |
+| Install command | `npm ci` |
+| Build command | `npm run build` |
+| Output / publish folder | `dist` |
+| Node version | 20.19+ or 22.12+ |
 
-> **Moving to a custom domain?** Update the Amplify URL in four places: `index.html` (canonical, Open Graph, Twitter and JSON-LD), `public/robots.txt` and `public/sitemap.xml`.
+Vercel, Netlify, Cloudflare Pages and AWS Amplify all work. Connect the GitHub repo, enter the settings above, and every push to `main` will rebuild the site.
+
+### First deploy checklist
+
+Some tags need the site's **full web address**: link previews on LinkedIn/WhatsApp/X, and the canonical URL for Google. A wrong address is worse than none, so they are switched off until you have the real one. Once you know it, use it everywhere `https://YOUR-DOMAIN` appears below:
+
+1. **`index.html`**: find the commented block that starts with `Not deployed yet.`. Replace every `https://YOUR-DOMAIN` with your address and remove the `<!--` and `-->` around the tags.
+2. **`index.html` (JSON-LD)**: add your address to the `Person` data, right after `"jobTitle"`:
+   ```json
+   "url": "https://YOUR-DOMAIN/",
+   ```
+3. **`public/sitemap.xml`**: create this file:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+     <url>
+       <loc>https://YOUR-DOMAIN/</loc>
+       <changefreq>monthly</changefreq>
+       <priority>1.0</priority>
+     </url>
+   </urlset>
+   ```
+4. **`public/robots.txt`**: add one line at the end:
+   ```text
+   Sitemap: https://YOUR-DOMAIN/sitemap.xml
+   ```
+5. **Test the share card**: paste your link into the [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/). You should see `public/og-image.png`.
+6. **Update the docs**: swap the "not deployed yet" badge at the top of this README for a link to the live site, and update `STATUS.md`.
 
 ---
 
@@ -389,7 +406,7 @@ This site has a lot of motion, so it is built to behave on weak devices and for 
 - **Smart 3D loading.** The heavy three.js scene (in Methodology and Architecture) is only downloaded on devices that can handle it, and only when it is about a screen away from view. The check (`utils/canGoFullGL.js`) needs WebGL2, 4+ CPU cores, 4+ GB of memory and no reduced-motion preference. On other devices the 3D box is simply left out, and the text around it explains everything.
 - **Adaptive video.** The hero has 1080p and 720p versions plus a poster image, so the first paint never waits for the video.
 - **Keyboard friendly.** The command palette and the Soft Stack drawer trap focus, close on <kbd>Esc</kbd>, and return focus when they close.
-- **SEO basics.** Canonical, Open Graph and Twitter tags, JSON-LD `Person` data, `robots.txt`, `sitemap.xml`, a web manifest and a dedicated share image.
+- **SEO basics.** Open Graph and Twitter titles and descriptions, JSON-LD `Person` data, `robots.txt`, a web manifest and a dedicated share image. The URL-based tags are added on first deploy (see [section 8](#8-deploying)).
 
 ---
 
@@ -415,15 +432,14 @@ An honest list, mirrored from [STATUS.md](STATUS.md) plus what a full audit of t
 
 - No resume download yet (the button was removed rather than point at a missing file).
 - No testimonials yet (the section stays hidden until real quotes are added).
-- The site is served from an Amplify subdomain, not a custom domain.
+- **Not deployed yet.** There is no domain, so the canonical link, link-preview image and sitemap are switched off (see the [first deploy checklist](#first-deploy-checklist)).
 
 **Engineering**
 
 - **No automated tests and no CI workflow.** `.github/` does not exist, so nothing checks a push except you running `lint` and `build`.
 - **Real-device testing is limited.** So far only build, lint and dev-server checks, not real phones or Safari/Firefox.
-- **Leftover code.** These files are not imported by the live site: `components/AgentGraph`, `CapabilityStrip`, `CustomCursor`, `HeroScene`, `IntroCounter`, `NowPanel`, `ParticleNetwork`, `ProjectCard`, `ProjectGlyph`, and `sections/About`, `Skills`, `SkillsMarquee`. They are older versions of current sections and are safe to delete when you want a tidier repo.
+- **Leftover code.** These files are not imported by the site: `components/AgentGraph`, `CapabilityStrip`, `CustomCursor`, `HeroScene`, `IntroCounter`, `NowPanel`, `ParticleNetwork`, `ProjectCard`, `ProjectGlyph`, and `sections/About`, `Skills`, `SkillsMarquee`. They are older versions of current sections and are safe to delete when you want a tidier repo.
 - **Dev spike ships in the build.** `spike.html` and `src/dev/` are a Phase 0 experiment, but `vite.config.js` still builds them into `dist/` (the config comment says to remove them). The one `npm run lint` warning comes from this folder.
-- **Stale notes.** `docs/repo_structure.txt` still describes an older project called `jarvyhq-portfolio`. Treat the tree in section 5 as the source of truth.
 - **Heavy hero video.** `public/hero/hero-1080.mp4` is about 10 MB. It is fine for now, but it makes the repo and first clone bigger.
 
 ---
