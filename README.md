@@ -78,8 +78,7 @@ The page is made of sections, shown here in the order they appear on the site.
 
 ### Small details worth knowing
 
-- **Command palette.** Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd>, type a few letters (for example `con`), and jump to a section, copy my email, or open GitHub and LinkedIn.
-- **Scroll progress bar.** A thin green line at the top of the page shows how far you have scrolled.
+- **Command palette.** Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> (press it again to close), or tap the `[ Ctrl K ]` button in the nav on a phone. Commands are grouped into Navigation, Actions and Social; type a few letters (for example `con`) to filter, use the arrow keys, and press <kbd>Enter</kbd>. "Toggle sound" is a placeholder until the site has audio.
 - **Soft Stack drawer.** A slide-out panel opened from the footer (beliefs, soft skills, reading). It traps keyboard focus, closes on <kbd>Esc</kbd>, and locks page scroll while open.
 - **Honest contact form.** If sending fails, the form shows a visible error and a "send by email instead" link. It never pretends the message was sent.
 
@@ -147,13 +146,19 @@ tawsif-portfolio/
 │   ├── hero/                   #   Hero videos (1080p + 720p) and poster images
 │   ├── skills/                 #   Skills background videos and poster
 │   ├── project-*.jpg           #   One screenshot per project card
-│   ├── favicon.svg, icon-*.png #   Icons for browsers and phones
+│   ├── logo.png                #   TR monogram shown in the nav
+│   ├── favicon.ico, icon-*.png #   Icons for browser tabs and phones
+│   ├── apple-touch-icon.png    #   iPhone home-screen icon
 │   ├── og-image.png            #   Preview image shown when the link is shared
 │   └── manifest.json, robots.txt
 │
 ├── scripts/
 │   ├── fetch-github-activity.mjs   # Runs before every build (see section 6)
-│   └── gen-brand-assets.py         # One-off icon / share-image generator
+│   ├── gen-logo-assets.py          # Makes logo.png + every icon from brand/
+│   └── gen-brand-assets.py         # Makes the share image (og-image.png)
+│
+├── brand/
+│   └── tr-monogram-source.png  # Clean source of the TR logo (input for gen-logo-assets.py)
 │
 ├── docs/
 │   └── screenshots/            # The pictures used in this README
@@ -430,7 +435,7 @@ An honest list, mirrored from [STATUS.md](STATUS.md) plus what a full audit of t
 
 **Content**
 
-- No resume download yet (the button was removed rather than point at a missing file).
+- No resume download yet (the button was removed rather than point at a missing file). To add one, save the PDF as `public/resume.pdf` and set `RESUME_URL` at the top of `src/components/CommandPalette.jsx`; the "Download resume" command then appears in the palette.
 - No testimonials yet (the section stays hidden until real quotes are added).
 - **Not deployed yet.** There is no domain, so the canonical link, link-preview image and sitemap are switched off (see the [first deploy checklist](#first-deploy-checklist)).
 
