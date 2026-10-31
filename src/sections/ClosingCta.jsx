@@ -48,7 +48,7 @@ export default function ClosingCta() {
             </Magnetic>
             <Magnetic>
               <a
-                href="https://linkedin.com/in/tawsif-khan-34952336b"
+                href="https://www.linkedin.com/in/tawsif-raza-khan/"
                 target="_blank"
                 rel="noreferrer"
                 className="btn-pill btn-pill--glass w-full"
