@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import Hero from "./sections/Hero";
 import AboutSpace from "./sections/AboutSpace";
 import SkillsFloat from "./sections/SkillsFloat";
@@ -19,6 +19,9 @@ import Nav from "./components/Nav";
 import Atmosphere from "./components/Atmosphere";
 import CommandPalette from "./components/CommandPalette";
 import GithubActivity from "./components/GithubActivity";
+
+// The chat widget loads in its own chunk once the intro is done, so it never slows the first paint.
+const AskTawsif = lazy(() => import("./components/AskTawsif/AskTawsif"));
 
 export default function App({ initialIntroDone = false }) {
   const [introDone, setIntroDone] = useState(initialIntroDone);
@@ -55,6 +58,9 @@ export default function App({ initialIntroDone = false }) {
             <ClosingCta />
           </main>
           <Footer />
+          <Suspense fallback={null}>
+            <AskTawsif />
+          </Suspense>
         </>
       )}
     </div>

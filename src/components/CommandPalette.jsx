@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const EMAIL = "tawsifk35@gmail.com";
 const GITHUB = "https://github.com/tawsif-raza";
-const LINKEDIN = "https://linkedin.com/in/tawsif-khan-34952336b";
+const LINKEDIN = "https://www.linkedin.com/in/tawsif-raza-khan/";
 // Drop the PDF at public/resume.pdf and set this to `${import.meta.env.BASE_URL}resume.pdf`.
 // While it's null the "Download resume" command is simply not listed, so the
 // palette never offers a link to a file that doesn't exist (see STATUS.md).

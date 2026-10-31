@@ -222,7 +222,8 @@ export default function Nav() {
         </div>
       )}
 
-      <div className="fixed bottom-6 right-6 z-40 hidden flex-col items-end gap-1 font-mono text-[10px] text-faint md:flex">
+      {/* bottom-24: the Ask Tawsif chat button has the corner below it */}
+      <div className="fixed bottom-24 right-6 z-40 hidden flex-col items-end gap-1 font-mono text-[10px] text-faint md:flex">
         <span>FOR INQUIRIES</span>
         <a href="mailto:tawsifk35@gmail.com" className="text-dim transition hover:text-accent">
           tawsifk35@gmail.com

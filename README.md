@@ -455,6 +455,6 @@ MIT. See [LICENSE](LICENSE). © 2026 Tawsif Raza Khan.
 
 <div align="center">
 
-**Want to work together?** → [tawsifk35@gmail.com](mailto:tawsifk35@gmail.com) · [GitHub](https://github.com/tawsif-raza) · [LinkedIn](https://linkedin.com/in/tawsif-khan-34952336b)
+**Want to work together?** → [tawsifk35@gmail.com](mailto:tawsifk35@gmail.com) · [GitHub](https://github.com/tawsif-raza) · [LinkedIn](https://www.linkedin.com/in/tawsif-raza-khan/)
 
 </div>
