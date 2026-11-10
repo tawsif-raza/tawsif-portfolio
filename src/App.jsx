@@ -23,14 +23,29 @@ import GithubActivity from "./components/GithubActivity";
 // The chat widget loads in its own chunk once the intro is done, so it never slows the first paint.
 const AskTawsif = lazy(() => import("./components/AskTawsif/AskTawsif"));
 
+// The intro plays once per browser session; refreshes go straight to the site.
+function hasSeenIntro() {
+  try {
+    return sessionStorage.getItem("trk-intro-seen") === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function App({ initialIntroDone = false }) {
-  const [introDone, setIntroDone] = useState(initialIntroDone);
+  const [skipIntro] = useState(() => initialIntroDone || hasSeenIntro());
+  const [introDone, setIntroDone] = useState(skipIntro);
 
   return (
     <div className="relative isolate min-h-screen w-full bg-bg">
       <Atmosphere />
       <div className="grain-overlay" />
-      <IntroSequence onComplete={() => setIntroDone(true)} />
+      {!skipIntro && (
+        <IntroSequence
+          onReveal={() => setIntroDone(true)}
+          onComplete={() => setIntroDone(true)}
+        />
+      )}
       {introDone && (
         <>
           <Nav />

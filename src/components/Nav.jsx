@@ -115,6 +115,29 @@ export default function Nav() {
     };
   }, []);
 
+  // Entrance: the bar drops in just after the intro curtain starts lifting.
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || !headerRef.current) return;
+    // fromTo with explicit end values (not .from) so StrictMode's double
+    // effect run can't capture the hidden state as the end state.
+    const ctx = gsap.context(() => {
+      const items = gsap.utils.toArray(".nav-link, button", headerRef.current);
+      const img = headerRef.current.querySelector("img");
+      gsap
+        .timeline({
+          delay: 0.4,
+          defaults: { ease: "power3.out" },
+          // Hand control back to CSS (hover scale, transitions) when done.
+          onComplete: () => gsap.set([headerRef.current, img, ...items], { clearProps: "transform,opacity" }),
+        })
+        .fromTo(headerRef.current, { yPercent: -100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7 })
+        .fromTo(img, { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5 }, "-=0.4")
+        .fromTo(items, { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, stagger: 0.05 }, "-=0.35");
+    }, headerRef);
+    return () => ctx.revert();
+  }, []); // mount-only: the entrance should not replay later
+
   // Escape closes mobile menu
   useEffect(() => {
     if (!open) return;

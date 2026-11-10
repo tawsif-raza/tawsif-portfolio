@@ -49,7 +49,7 @@ The page is made of sections, shown here in the order they appear on the site.
 
 | Section | What the visitor sees | Code |
 | :--- | :--- | :--- |
-| **Intro** | A short "Initializing system…" loading screen. Click or press any key to skip it. | `components/IntroSequence.jsx` |
+| **Intro** | A ~6.5 s cinematic opening: a photographic 3D Earth falls into frame, lands with a shockwave, wires up a network of agent nodes while three lines of text play, then breaks apart into grains that swarm together and spell the name. Plays once per browser session; click or press any key to skip. Text-only on weaker devices. Earth textures are in `public/intro/`. | `components/IntroSequence.jsx`, `components/introPlanet.js` |
 | **Hero** | Full-screen film background, headline, two buttons. | `sections/Hero.jsx` |
 | **Skills** (`#skills`) | Tech logos floating over a video. Hover a logo to freeze it. | `sections/SkillsFloat.jsx` |
 | **About** (`#about`) | My story, plus a live "NOW BUILDING" status card. | `sections/AboutSpace.jsx` |
