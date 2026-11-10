@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#08090b"/>
+  <defs>
+    <g id="t"><path d="M9.2 16.2 L28.2 16.2"/><path d="M18.7 16.2 L18.7 44.2"/></g>
+    <linearGradient id="tf" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="13.2" y2="47.2"><stop offset="0" stop-color="#dcff5e"/><stop offset="1" stop-color="#b5e124"/></linearGradient>
+    <g id="r"><path d="M37.2 44.2 L37.2 16.2 L45.2 16.2 L45.2 16.2 L46.11 16.26 L47.01 16.44 L47.88 16.73 L48.7 17.14 L49.46 17.65 L50.15 18.25 L50.75 18.94 L51.26 19.7 L51.67 20.52 L51.96 21.39 L52.14 22.29 L52.2 23.2 L52.14 24.11 L51.96 25.01 L51.67 25.88 L51.26 26.7 L50.75 27.46 L50.15 28.15 L49.46 28.75 L48.7 29.26 L47.88 29.67 L47.01 29.96 L46.11 30.14 L45.2 30.2 L37.2 30.2"/><path d="M44.2 30.2 L52.2 44.2"/></g>
+    <linearGradient id="rf" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="13.2" y2="47.2"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9dcd6"/></linearGradient>
+  </defs>
+  <g fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <use href="#t" stroke="#5f7812" transform="translate(2.6 3.6)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(2.31 3.2)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(2.02 2.8)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(1.73 2.4)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(1.44 2)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(1.16 1.6)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(0.87 1.2)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(0.58 0.8)"/>
+    <use href="#t" stroke="#5f7812" transform="translate(0.29 0.4)"/>
+    <use href="#r" stroke="#73787f" transform="translate(2.6 3.6)"/>
+    <use href="#r" stroke="#73787f" transform="translate(2.31 3.2)"/>
+    <use href="#r" stroke="#73787f" transform="translate(2.02 2.8)"/>
+    <use href="#r" stroke="#73787f" transform="translate(1.73 2.4)"/>
+    <use href="#r" stroke="#73787f" transform="translate(1.44 2)"/>
+    <use href="#r" stroke="#73787f" transform="translate(1.16 1.6)"/>
+    <use href="#r" stroke="#73787f" transform="translate(0.87 1.2)"/>
+    <use href="#r" stroke="#73787f" transform="translate(0.58 0.8)"/>
+    <use href="#r" stroke="#73787f" transform="translate(0.29 0.4)"/>
+    <use href="#t" stroke="url(#tf)"/>
+    <use href="#r" stroke="url(#rf)"/>
+  </g>
+</svg>

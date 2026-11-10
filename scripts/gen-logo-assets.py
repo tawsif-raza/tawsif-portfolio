@@ -1,101 +1,204 @@
 """
-Generates every logo/favicon asset from the flat "TR" circuit monogram.
+Generates every logo/favicon asset for the "TR" monogram.
 
-    python scripts/gen-logo-assets.py [source.png]
+    python scripts/gen-logo-assets.py
 
-`source.png` is the monogram on a plain black background. Default:
-brand/tr-monogram-source.png (the logo cropped out of the original
-1024x572 render, kept in the repo so this script is reproducible).
+The mark is defined below as a handful of strokes on a 64-unit grid, in the
+site's own colours (lime T, paper-white R), so it needs no source image: the
+SVGs and the PNG/ICO files are all drawn from the same geometry.
+
+It is drawn as a 3D block: each letter is extruded down and to the right in
+a darker shade of its own colour, and the front face carries a soft
+top-to-bottom gradient, as if lit from above.
 
 Outputs (all committed; not part of the build pipeline):
-  public/logo.png             transparent nav logo, trimmed, 128px tall
-                              (4x the 32px it renders at in the nav)
-  public/favicon.ico          16/32/48, transparent (browser tab)
-  public/icon-192.png         manifest icon, on the site background
-  public/icon-512.png         manifest icon, on the site background
-  public/apple-touch-icon.png 180x180, on the site background (iOS
-                              ignores transparency and would fill black)
+  public/logo.svg             the bare mark, transparent (nav)
+  public/logo.png             the same, 128px tall (fallback / sharing)
+  public/favicon.svg          the mark on a dark rounded tile (browser tab)
+  public/favicon.ico          16/32/48 of that tile (older browsers)
+  public/icon-192.png         manifest icon, full-bleed site background
+  public/icon-512.png         manifest icon, full-bleed site background
+  public/apple-touch-icon.png 180x180, full-bleed (iOS rounds it itself)
 """
-import sys
+import math
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_SRC = ROOT / "brand" / "tr-monogram-source.png"
 PUBLIC = ROOT / "public"
-SITE_BG = (8, 9, 11)  # --color-bg / #08090b
-BLACK_POINT = 3  # the render's background sits at 0-2
+
+SITE_BG = "#08090b"  # --color-bg
+
+# Per letter: face gradient (top, bottom) and the colour of the extruded side.
+LIME = {"id": "t", "top": "#dcff5e", "bottom": "#b5e124", "side": "#5f7812"}  # around --color-accent
+PAPER = {"id": "r", "top": "#ffffff", "bottom": "#d9dcd6", "side": "#73787f"}  # around --color-paper
+
+STROKE = 6.0  # stroke width on the 64-unit grid; round caps and joins
+DEPTH = (2.6, 3.6)  # extrusion offset (right, down) on the same grid
+DEPTH_STEPS = 9  # copies of the shape that make up the extruded side
+TILE = 64.0  # favicon tile size
+TILE_RADIUS = 14.0
+SS = 8  # supersampling factor for the PNG renders
 
 
-def cut_out(src: Image.Image) -> Image.Image:
-    """Black background -> transparency, keeping anti-aliased edges.
-
-    Each pixel is treated as (logo colour x alpha) composited over black:
-    alpha comes from the brightest channel, and the colour is
-    un-premultiplied so edges keep their true green/blue instead of
-    going muddy when placed on a non-black background.
-    """
-    rgb = np.asarray(src.convert("RGB")).astype(np.float64)
-    mx = rgb.max(axis=-1)
-    alpha = np.clip((mx - BLACK_POINT) / (255 - BLACK_POINT), 0, 1)
-    with np.errstate(divide="ignore", invalid="ignore"):
-        colour = np.where(alpha[..., None] > 0, rgb / np.maximum(alpha[..., None], 1e-6), 0)
-    colour = np.clip(colour, 0, 255)
-    out = np.dstack([colour, alpha * 255]).round().astype(np.uint8)
-    return Image.fromarray(out)  # (h, w, 4) uint8 -> RGBA
+def arc(cx, cy, r, a0, a1, steps=24):
+    return [
+        (cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / steps)),
+         cy + r * math.sin(math.radians(a0 + (a1 - a0) * i / steps)))
+        for i in range(steps + 1)
+    ]
 
 
-def logo_bbox(src: Image.Image, pad: int = 6):
-    """Bounds of the coloured monogram only. Saturation-based, so neutral
-    grey marks elsewhere in a render (e.g. a corner sparkle) are ignored."""
-    rgb = np.asarray(src.convert("RGB")).astype(int)
-    sat = (rgb.max(-1) - rgb.min(-1)) > 50
-    ys, xs = np.where(sat)
-    x0, x1, y0, y1 = xs.min() - pad, xs.max() + pad, ys.min() - pad, ys.max() + pad
-    return max(0, x0), max(0, y0), min(src.width, x1 + 1), min(src.height, y1 + 1)
+# (letter, polyline). The T is lime, the R is paper white.
+STROKES = [
+    (LIME, [(10, 18), (29, 18)]),  # T bar
+    (LIME, [(19.5, 18), (19.5, 46)]),  # T stem
+    (PAPER, [(38, 46), (38, 18), (46, 18), *arc(46, 25, 7, -90, 90), (38, 32)]),  # R stem + bowl
+    (PAPER, [(45, 32), (53, 46)]),  # R leg
+]
+LETTERS = (LIME, PAPER)
+
+_xs = [x for _, pts in STROKES for x, _ in pts]
+_ys = [y for _, pts in STROKES for _, y in pts]
+# Bounds of the front face, then of the whole block including the extrusion.
+FACE_Y0, FACE_Y1 = min(_ys) - STROKE / 2, max(_ys) + STROKE / 2
+X0, Y0 = min(_xs) - STROKE / 2, FACE_Y0
+X1, Y1 = max(_xs) + STROKE / 2 + DEPTH[0], FACE_Y1 + DEPTH[1]
+MARK_W, MARK_H = X1 - X0, Y1 - Y0
 
 
-def fit_square(logo: Image.Image, size: int, fill: float, bg=None) -> Image.Image:
-    """Centre `logo` in a size x size square, its longer side at `fill`."""
-    scale = (size * fill) / max(logo.size)
-    w, h = max(1, round(logo.width * scale)), max(1, round(logo.height * scale))
-    resized = logo.resize((w, h), Image.LANCZOS)
-    canvas = Image.new("RGBA", (size, size), (*bg, 255) if bg else (0, 0, 0, 0))
-    canvas.alpha_composite(resized, ((size - w) // 2, (size - h) // 2))
-    return canvas if bg is None else canvas.convert("RGB")
+def fmt(v):
+    return f"{v:.2f}".rstrip("0").rstrip(".")
+
+
+def svg_mark(dx, dy):
+    """The mark's SVG, shifted by (dx, dy). Each letter's strokes are defined
+    once and reused for every slice of the extrusion and for the face."""
+    defs, sides, faces = [], [], []
+    for letter in LETTERS:
+        paths = "".join(
+            '<path d="M' + " L".join(f"{fmt(x + dx)} {fmt(y + dy)}" for x, y in pts) + '"/>'
+            for owner, pts in STROKES
+            if owner is letter
+        )
+        lid = letter["id"]
+        defs.append(f'<g id="{lid}">{paths}</g>')
+        defs.append(
+            f'<linearGradient id="{lid}f" gradientUnits="userSpaceOnUse" x1="0" x2="0" '
+            f'y1="{fmt(FACE_Y0 + dy)}" y2="{fmt(FACE_Y1 + dy)}">'
+            f'<stop offset="0" stop-color="{letter["top"]}"/><stop offset="1" stop-color="{letter["bottom"]}"/>'
+            f"</linearGradient>"
+        )
+        for i in range(DEPTH_STEPS, 0, -1):
+            f = i / DEPTH_STEPS
+            sides.append(
+                f'<use href="#{lid}" stroke="{letter["side"]}" '
+                f'transform="translate({fmt(DEPTH[0] * f)} {fmt(DEPTH[1] * f)})"/>'
+            )
+        faces.append(f'<use href="#{lid}" stroke="url(#{lid}f)"/>')
+    nl = "\n    "
+    return (
+        f"<defs>{nl}{nl.join(defs)}\n  </defs>\n"
+        f'  <g fill="none" stroke-width="{fmt(STROKE)}" stroke-linecap="round" stroke-linejoin="round">'
+        f"{nl}{nl.join(sides)}{nl}{nl.join(faces)}\n  </g>"
+    )
+
+
+def write_svgs():
+    logo = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {fmt(MARK_W)} {fmt(MARK_H)}" '
+        f'width="{fmt(MARK_W)}" height="{fmt(MARK_H)}" role="img" aria-label="TR">\n'
+        f"  {svg_mark(-X0, -Y0)}\n</svg>\n"
+    )
+    (PUBLIC / "logo.svg").write_text(logo, encoding="utf-8", newline="\n")
+
+    dx, dy = (TILE - MARK_W) / 2 - X0, (TILE - MARK_H) / 2 - Y0
+    favicon = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {fmt(TILE)} {fmt(TILE)}">\n'
+        f'  <rect width="{fmt(TILE)}" height="{fmt(TILE)}" rx="{fmt(TILE_RADIUS)}" fill="{SITE_BG}"/>\n'
+        f"  {svg_mark(dx, dy)}\n</svg>\n"
+    )
+    (PUBLIC / "favicon.svg").write_text(favicon, encoding="utf-8", newline="\n")
+    print("wrote public/logo.svg, public/favicon.svg")
+
+
+def draw_strokes(draw, letter, fill, scale, dx, dy):
+    """One letter's strokes with round caps/joins: a thick line per segment
+    plus a disc on every vertex."""
+    w = STROKE * scale
+    for owner, pts in STROKES:
+        if owner is not letter:
+            continue
+        p = [((x + dx) * scale, (y + dy) * scale) for x, y in pts]
+        draw.line(p, fill=fill, width=round(w))
+        for x, y in p:
+            draw.ellipse((x - w / 2, y - w / 2, x + w / 2, y + w / 2), fill=fill)
+
+
+def hex_rgb(h):
+    return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
+
+
+def draw_mark(img, scale, dx, dy):
+    """Paint the 3D mark onto `img` (RGBA): extruded sides, then the faces."""
+    draw = ImageDraw.Draw(img)
+    for letter in LETTERS:
+        for i in range(DEPTH_STEPS * 3, 0, -1):  # finer than the SVG: free here
+            f = i / (DEPTH_STEPS * 3)
+            draw_strokes(draw, letter, letter["side"], scale, dx + DEPTH[0] * f, dy + DEPTH[1] * f)
+    y0, y1 = (FACE_Y0 + dy) * scale, (FACE_Y1 + dy) * scale
+    for letter in LETTERS:
+        mask = Image.new("L", img.size, 0)
+        draw_strokes(ImageDraw.Draw(mask), letter, 255, scale, dx, dy)
+        top, bottom = hex_rgb(letter["top"]), hex_rgb(letter["bottom"])
+        column = Image.new("RGB", (1, img.height))
+        for y in range(img.height):
+            t = min(1.0, max(0.0, (y - y0) / (y1 - y0)))
+            column.putpixel((0, y), tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)))
+        img.paste(column.resize(img.size), (0, 0), mask)
+
+
+def render_mark(height):
+    """The bare mark on transparency, `height` px tall."""
+    scale = height / MARK_H * SS
+    size = (round(MARK_W * scale), round(MARK_H * scale))
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    draw_mark(img, scale, -X0, -Y0)
+    return img.resize((round(size[0] / SS), height), Image.LANCZOS)
+
+
+def render_tile(size, rounded, fill):
+    """The mark centred on a dark square. `fill` is the mark's width as a
+    fraction of the square; `rounded` clips the corners (tab icons)."""
+    big = size * SS
+    img = Image.new("RGBA", (big, big), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    if rounded:
+        draw.rounded_rectangle((0, 0, big - 1, big - 1), radius=TILE_RADIUS / TILE * big, fill=SITE_BG)
+    else:
+        draw.rectangle((0, 0, big, big), fill=SITE_BG)
+    scale = big * fill / MARK_W
+    dx = (big / scale - MARK_W) / 2 - X0
+    dy = (big / scale - MARK_H) / 2 - Y0
+    draw_mark(img, scale, dx, dy)
+    return img.resize((size, size), Image.LANCZOS)
 
 
 def main():
-    src_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_SRC
-    src = Image.open(src_path).convert("RGB")
-    cropped = src.crop(logo_bbox(src))
+    write_svgs()
 
-    # Keep a clean, cropped source in the repo (only when reading a raw render).
-    if src_path.resolve() != DEFAULT_SRC.resolve():
-        DEFAULT_SRC.parent.mkdir(exist_ok=True)
-        cropped.save(DEFAULT_SRC, optimize=True)
-        print(f"wrote {DEFAULT_SRC.relative_to(ROOT)} {cropped.size}")
+    render_mark(128).save(PUBLIC / "logo.png", optimize=True)
+    print("wrote public/logo.png")
 
-    logo = cut_out(cropped)
-    # trim to the visible pixels so the nav image has no dead space
-    logo = logo.crop(logo.getchannel("A").point(lambda a: 255 if a > 8 else 0).getbbox())
-
-    nav_h = 128
-    nav = logo.resize((round(logo.width * nav_h / logo.height), nav_h), Image.LANCZOS)
-    # 128-colour palette PNG: a two-colour logo loses nothing visible and
-    # drops from ~22 KB to ~5 KB (alpha edges are kept by FASTOCTREE).
-    nav.quantize(colors=128, method=Image.Quantize.FASTOCTREE).save(PUBLIC / "logo.png", optimize=True)
-    print(f"wrote public/logo.png {nav.size}")
-
-    # Tab icons: transparent, near edge-to-edge so the strokes survive 16px.
-    ico_frames = [fit_square(logo, s, 0.96) for s in (16, 32, 48)]
-    ico_frames[-1].save(PUBLIC / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)], append_images=ico_frames[:-1])
+    # Tab icons: same proportions as favicon.svg.
+    frames = [render_tile(s, True, MARK_W / TILE) for s in (16, 32, 48)]
+    frames[-1].save(PUBLIC / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48)], append_images=frames[:-1])
     print("wrote public/favicon.ico (16, 32, 48)")
 
+    # Home-screen icons: full bleed, mark kept inside the maskable safe zone.
     for size, name in ((192, "icon-192.png"), (512, "icon-512.png"), (180, "apple-touch-icon.png")):
-        fit_square(logo, size, 0.74, bg=SITE_BG).save(PUBLIC / name, optimize=True)
+        render_tile(size, False, 0.6).convert("RGB").save(PUBLIC / name, optimize=True)
         print(f"wrote public/{name} ({size}x{size})")
 
 

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 
-const LOGO = `${import.meta.env.BASE_URL}logo.png`;
+const LOGO = `${import.meta.env.BASE_URL}logo.svg`;
 // Show the shortcut the visitor's keyboard actually has.
 const IS_MAC =
   typeof navigator !== "undefined" &&
@@ -169,22 +169,22 @@ export default function Nav() {
         data-scrolled="false"
         className="fixed inset-x-0 top-0 z-40 flex items-center justify-between bg-transparent px-6 py-5 transition-colors duration-300 data-[scrolled=true]:bg-bg/95 md:px-16 lg:px-24"
       >
-        {/* Home link. The 32px logo is pulled in by -my-1.5 so the bar keeps
+        {/* Home link. The 28px logo is pulled in by -my-1 so the bar keeps
             the height the old 20px "T.R.K" text gave it. width/height
             reserve the box before the image loads, so nothing shifts. */}
         <a
           href="#hero"
-          className="group -my-1.5 inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
+          className="group -my-1 inline-flex shrink-0 items-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
         >
           <img
             src={LOGO}
             alt="Tawsif Raza Khan logo"
-            width={182}
-            height={128}
+            width={52}
+            height={38}
             fetchPriority="high"
             decoding="async"
             draggable={false}
-            className="h-8 w-auto select-none transition duration-300 ease-out group-hover:drop-shadow-[0_0_8px_rgba(26,255,58,0.45)] group-focus-visible:drop-shadow-[0_0_8px_rgba(26,255,58,0.45)] motion-safe:group-hover:scale-105"
+            className="h-7 w-auto select-none transition duration-300 ease-out group-hover:drop-shadow-[0_0_8px_rgba(198,244,50,0.45)] group-focus-visible:drop-shadow-[0_0_8px_rgba(198,244,50,0.45)] motion-safe:group-hover:scale-105"
           />
           <span className="sr-only">, back to top</span>
         </a>

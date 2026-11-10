@@ -4,7 +4,7 @@
 
 **A dark, motion-heavy one-page portfolio for an AI/ML engineer who builds agentic systems.**
 
-![Status](https://img.shields.io/badge/status-not%20deployed%20yet-c6f432?style=for-the-badge&labelColor=08090b)
+[![Status](https://img.shields.io/badge/status-live-c6f432?style=for-the-badge&labelColor=08090b)](https://main.dahjkchabvbri.amplifyapp.com/)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react&logoColor=white&labelColor=08090b)
 ![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite&logoColor=white&labelColor=08090b)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white&labelColor=08090b)
@@ -53,17 +53,15 @@ The page is made of sections, shown here in the order they appear on the site.
 | **Hero** | Full-screen film background, headline, two buttons. | `sections/Hero.jsx` |
 | **Skills** (`#skills`) | Tech logos floating over a video. Hover a logo to freeze it. | `sections/SkillsFloat.jsx` |
 | **About** (`#about`) | My story, plus a live "NOW BUILDING" status card. | `sections/AboutSpace.jsx` |
-| **Methodology** | "How I build AI systems": a step-by-step process, with a small 3D scene on capable devices. | `sections/EngineeringMethodology.jsx` |
-| **Work** (`#projects`) | Seven projects as a sticky stack of cards. | `sections/Projects.jsx` |
-| **Architecture** | Interactive blueprints of systems in production, with their failure fallbacks. | `sections/ArchitectureShowcase.jsx` |
-| **Impact** | "Engineering rigor and safeguards": the standards my systems follow. | `sections/EngineeringImpact.jsx` |
-| **Tech stack** | A "technology matrix" of the tools I use. | `sections/TechStack.jsx` |
-| **GitHub activity** | My latest repos, fetched at build time. | `components/GithubActivity.jsx` |
+| **Work** (`#projects`) | Seven projects as a sticky stack of cards. Projects with no public link offer a walkthrough instead. The list lives in `data/projects.js`; the hero and Proof counts are read from it. | `sections/Projects.jsx` |
 | **Services** (`#services`) | What I can build for clients. | `sections/Services.jsx` |
-| **Current focus** | What I'm exploring and building right now. | `sections/CurrentFocus.jsx` |
+| **Methodology** | "How I build AI systems": a step-by-step process, with a small 3D scene on capable devices. | `sections/EngineeringMethodology.jsx` |
+| **Architecture** | Interactive blueprints of systems in production, with their failure fallbacks. | `sections/ArchitectureShowcase.jsx` |
+| **Proof** | Four figures taken from the projects above. | `sections/EngineeringImpact.jsx` |
+| **GitHub activity** | My latest repos, fetched at build time. | `components/GithubActivity.jsx` |
 | **Testimonials** | *Hidden until a real quote is added.* | `sections/Testimonials.jsx` |
 | **Contact** (`#contact`) | A contact form that sends to my inbox. | `sections/Contact.jsx` |
-| **Closing CTA and Footer** | A last call to action, plus the "Soft Stack" drawer. | `sections/ClosingCta.jsx`, `sections/Footer.jsx` |
+| **Footer** | Links, plus the "Soft Stack" drawer. | `sections/Footer.jsx` |
 
 <table>
   <tr>
@@ -96,7 +94,7 @@ The page is made of sections, shown here in the order they appear on the site.
 | Icons | **lucide-react** + inline SVG logos | UI icons and brand logos. |
 | Linting | **oxlint** | A very fast code checker. |
 | Contact form | **Formspree** | Receives form posts, so no backend is needed. |
-| Hosting | *Not deployed yet* | Any static host works. See [Deploying](#8-deploying). |
+| Hosting | **AWS Amplify** | Live at <https://main.dahjkchabvbri.amplifyapp.com/>. See [Deploying](#8-deploying). |
 
 > **Node.js 20.19+ or 22.12+ is required.** Vite 8 will not run on older versions.
 
@@ -146,19 +144,19 @@ tawsif-portfolio/
 │   ├── hero/                   #   Hero videos (1080p + 720p) and poster images
 │   ├── skills/                 #   Skills background videos and poster
 │   ├── project-*.jpg           #   One screenshot per project card
-│   ├── logo.png                #   TR monogram shown in the nav
-│   ├── favicon.ico, icon-*.png #   Icons for browser tabs and phones
+│   ├── logo.svg, logo.png      #   TR monogram (the nav uses the SVG)
+│   ├── favicon.svg, favicon.ico, icon-*.png #   Icons for browser tabs and phones
 │   ├── apple-touch-icon.png    #   iPhone home-screen icon
 │   ├── og-image.png            #   Preview image shown when the link is shared
 │   └── manifest.json, robots.txt
 │
 ├── scripts/
 │   ├── fetch-github-activity.mjs   # Runs before every build (see section 6)
-│   ├── gen-logo-assets.py          # Makes logo.png + every icon from brand/
+│   ├── gen-logo-assets.py          # Draws the TR logo and every icon (no source image needed)
 │   └── gen-brand-assets.py         # Makes the share image (og-image.png)
 │
 ├── brand/
-│   └── tr-monogram-source.png  # Clean source of the TR logo (input for gen-logo-assets.py)
+│   └── tr-monogram-source.png  # The previous circuit-style logo (no longer used)
 │
 ├── docs/
 │   └── screenshots/            # The pictures used in this README
@@ -183,7 +181,7 @@ tawsif-portfolio/
 
 ### From code to website
 
-The site is **not deployed yet**. Once you connect a host (see [section 8](#8-deploying)), this is what will happen on every push:
+The site is hosted on AWS Amplify (see [section 8](#8-deploying)). With the repo connected to a host, this is what happens on every push:
 
 ```mermaid
 flowchart LR
@@ -340,8 +338,8 @@ Open `src/App.jsx`. Sections render top to bottom in the order they are written 
 
 ```jsx
 <Hero />
-<EngineeringMethodology />
 <Projects />
+<Services />
 {/* delete or comment out a line to remove that section */}
 <Contact />
 ```
@@ -358,7 +356,7 @@ const USERNAME = "tawsif-raza";
 
 ## 8. Deploying
 
-**The site is not deployed yet.** There is no live URL and no domain. This section is the plan for the first deploy.
+**The site is live on AWS Amplify at <https://main.dahjkchabvbri.amplifyapp.com/>.** There is no custom domain yet, and the address-based tags in the checklist below are still switched off.
 
 ### Build settings (the same on every host)
 
@@ -437,7 +435,7 @@ An honest list, mirrored from [STATUS.md](STATUS.md) plus what a full audit of t
 
 - No resume download yet (the button was removed rather than point at a missing file). To add one, save the PDF as `public/resume.pdf` and set `RESUME_URL` at the top of `src/components/CommandPalette.jsx`; the "Download resume" command then appears in the palette.
 - No testimonials yet (the section stays hidden until real quotes are added).
-- **Not deployed yet.** There is no domain, so the canonical link, link-preview image and sitemap are switched off (see the [first deploy checklist](#first-deploy-checklist)).
+- **Link previews are off.** The site is live, but the canonical link, link-preview image and sitemap are still switched off (see the [first deploy checklist](#first-deploy-checklist)).
 
 **Engineering**
 
