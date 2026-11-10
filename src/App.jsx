@@ -11,9 +11,6 @@ import Footer from "./sections/Footer";
 import EngineeringMethodology from "./sections/EngineeringMethodology";
 import ArchitectureShowcase from "./sections/ArchitectureShowcase";
 import EngineeringImpact from "./sections/EngineeringImpact";
-import TechStack from "./sections/TechStack";
-import CurrentFocus from "./sections/CurrentFocus";
-import ClosingCta from "./sections/ClosingCta";
 import IntroSequence from "./components/IntroSequence";
 import Nav from "./components/Nav";
 import Atmosphere from "./components/Atmosphere";
@@ -60,17 +57,14 @@ export default function App({ initialIntroDone = false }) {
               <SkillsFloat />
               <AboutSpace />
             </div>
-            <EngineeringMethodology />
             <Projects />
+            <Services />
+            <EngineeringMethodology />
             <ArchitectureShowcase />
             <EngineeringImpact />
-            <TechStack />
             <GithubActivity />
-            <Services />
-            <CurrentFocus />
             <Testimonials />
             <Contact />
-            <ClosingCta />
           </main>
           <Footer />
           <Suspense fallback={null}>

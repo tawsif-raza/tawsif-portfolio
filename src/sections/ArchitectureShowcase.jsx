@@ -181,7 +181,7 @@ export default function ArchitectureShowcase() {
       aria-label="AI System Architectures"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-20 md:px-12"
     >
-      <SectionLabel number="ARCH" title="SYSTEM ARCHITECTURE" />
+      <SectionLabel number="06" title="SYSTEM ARCHITECTURE" />
 
       <RevealText
         text="Interactive blueprints of systems currently in production."

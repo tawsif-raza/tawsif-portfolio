@@ -90,7 +90,7 @@ export default function EngineeringMethodology() {
       aria-label="How I Build AI Systems"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-20 sm:py-24 md:px-12"
     >
-      <SectionLabel number="METHOD" title="HOW I BUILD AI SYSTEMS" />
+      <SectionLabel number="05" title="HOW I BUILD AI SYSTEMS" />
 
       <RevealText
         text="From problem formulation to production hardening."

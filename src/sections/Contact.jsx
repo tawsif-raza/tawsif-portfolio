@@ -61,7 +61,7 @@ export default function Contact() {
       // Surface the failure instead of silently redirecting to mailto —
       // offer it as a visible, explicit action instead.
       setError({
-        mailto: `mailto:tawsifk35@gmail.com?subject=Portfolio inquiry from ${name}&body=${encodeURIComponent(message)}%0A%0AFrom: ${email}`,
+        mailto: `mailto:tawsifk35@gmail.com?subject=${encodeURIComponent(`Portfolio inquiry from ${name}`)}&body=${encodeURIComponent(message)}%0A%0AFrom: ${email}`,
       });
     } finally {
       setSending(false);
@@ -74,7 +74,7 @@ export default function Contact() {
       id="contact"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-32 md:px-12"
     >
-      <SectionLabel number="05" title="CONTACT" />
+      <SectionLabel number="08" title="CONTACT" />
 
       <p className="contact-reveal mb-6 font-mono text-xs text-faint">
         Currently in Bengaluru, working with people anywhere.

@@ -1,34 +1,33 @@
 import SectionLabel from "../components/SectionLabel";
 import RevealText from "../components/RevealText";
+import { PROJECTS, countByStatus } from "../data/projects";
 
-const IMPACT_POINTS = [
+// Every figure here is stated on a project card in the Work section; the
+// live count is read from the same data, so the two can't disagree.
+const PROOF_POINTS = [
+  {
+    metric: `${countByStatus("live")} of ${PROJECTS.length}`,
+    label: "Systems live and running",
+    desc: "The rest are in progress, and each card in the Work section says exactly how far along it is.",
+    tag: "Shipping",
+  },
   {
     metric: "1,366",
-    label: "Curated Dataset Pairs",
-    subtitle: "Dataset Hygiene & Format Control",
-    desc: "Engineered and verified a domain-specific conversational dataset formatted for QLoRA fine-tuning. Enforced strict JSONL schema validation and deduplication to ensure clean training convergence.",
-    tag: "Data Engineering",
+    label: "Curated training examples",
+    desc: "Curated, deduplicated and schema-checked for the Qwen 2.5 QLoRA fine-tune, so the model trains on clean data.",
+    tag: "Data",
   },
   {
-    metric: "Zero",
-    label: "Runtime Client API Dependencies",
-    subtitle: "Build-Time Static Hydration",
-    desc: "Third-party platform telemetry (such as GitHub activity) is fetched and verified during the static build phase. Visitors encounter zero client-side API rate limits and zero external network latency.",
-    tag: "Architecture",
-  },
-  {
-    metric: "Guarded",
-    label: "Human-in-the-Loop Safeguards",
-    subtitle: "Pre-Transmission Verification",
-    desc: "Outbound lead generation pipelines draft personalized outreach directly into Gmail for human verification before sending. No unreviewed automated messages ever transmit without explicit sign-off.",
-    tag: "Safety",
-  },
-  {
-    metric: "Isolated",
-    label: "Stateful Subgraph Boundaries",
-    subtitle: "Fault-Tolerant Topologies",
-    desc: "LangGraph pipelines employ asynchronous Send() fan-out and isolated subgraph boundaries. If an individual specialized agent encounters an upstream timeout, the broader workflow handles it gracefully.",
+    metric: "5-node",
+    label: "LangGraph pipeline, end to end",
+    desc: "AI Video Studio plans a story, fans out to specialist agents, then pauses for human approval before anything is produced.",
     tag: "Orchestration",
+  },
+  {
+    metric: "-14 LUFS",
+    label: "QA gate on every rendered clip",
+    desc: "The video editing agent checks each render for black frames, silence and loudness before a clip is allowed out.",
+    tag: "Quality",
   },
 ];
 
@@ -36,47 +35,31 @@ export default function EngineeringImpact() {
   return (
     <section
       id="impact"
-      aria-label="Engineering Standards and Outcomes"
+      aria-label="Proof"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-16 sm:py-20 md:px-12"
     >
-      <SectionLabel number="IMPACT" title="ENGINEERING RIGOR & SAFEGUARDS" />
+      <SectionLabel number="07" title="PROOF" />
 
       <RevealText
-        text="Production standards anchored in verifiable systems."
+        text="Numbers you can check against the work."
         className="mb-4 max-w-3xl text-[2rem] font-semibold leading-[1.05] tracking-[-0.035em] text-paper md:text-5xl"
       />
 
       <p className="mb-10 max-w-xl text-[15px] leading-relaxed text-dim">
-        Engineering quality is measured by operational reliability, clean data pipelines,
-        and deterministic safeguards rather than unverified claims.
+        No vanity metrics. Each figure comes straight from a system in the Work section.
       </p>
 
-      {/* 4-Quadrant Card Grid */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        {IMPACT_POINTS.map((item) => (
-          <div key={item.label} className="glass-card flex flex-col justify-between p-6 sm:p-7">
-            <div>
-              <div className="mb-3 flex items-center justify-between">
-                <span className="font-display text-2xl sm:text-3xl font-semibold text-accent">
-                  {item.metric}
-                </span>
-                <span className="font-mono text-[10px] uppercase tracking-wider text-faint border border-line/60 rounded px-2 py-0.5">
-                  {item.tag}
-                </span>
-              </div>
-              <h3 className="font-display text-base sm:text-lg font-medium text-paper">
-                {item.label}
-              </h3>
-              <div className="mt-1 font-mono text-xs text-accent-dim">
-                {item.subtitle}
-              </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-dim">
-                {item.desc}
-              </p>
+        {PROOF_POINTS.map((item) => (
+          <div key={item.label} className="glass-card p-6 sm:p-7">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="font-display text-2xl font-semibold text-accent sm:text-3xl">{item.metric}</span>
+              <span className="rounded border border-line/60 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-faint">
+                {item.tag}
+              </span>
             </div>
-            <div className="mt-5 border-t border-line/40 pt-3 font-mono text-[10px] text-faint">
-              VERIFIED IN CODEBASE
-            </div>
+            <h3 className="font-display text-base font-medium text-paper sm:text-lg">{item.label}</h3>
+            <p className="mt-3 text-[13px] leading-relaxed text-dim">{item.desc}</p>
           </div>
         ))}
       </div>

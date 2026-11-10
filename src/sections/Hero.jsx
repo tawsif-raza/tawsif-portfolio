@@ -3,6 +3,7 @@ import gsap from "gsap";
 import Magnetic from "../components/Magnetic";
 import RoleCycler from "../components/RoleCycler";
 import useReducedMotion from "../hooks/useReducedMotion";
+import { PROJECTS, countByStatus } from "../data/projects";
 
 // Full-bleed film hero: a 24 s Veo-generated loop of Tawsif plays muted
 // behind the copy. Phones get a lighter 720p file; reduced-motion visitors
@@ -147,7 +148,7 @@ export default function Hero() {
             <span className="availability-dot" aria-hidden="true" />
             Available for freelance &amp; full-time
           </span>
-          <span>9 systems built · 3 live &amp; shipping</span>
+          <span>{PROJECTS.length} systems built · {countByStatus("live")} live &amp; shipping</span>
         </div>
       </div>
 
