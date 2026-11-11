@@ -28,7 +28,7 @@ export default function AboutSpace() {
   }, [reducedMotion]);
 
   return (
-    <section ref={rootRef} id="about" className="relative">
+    <section ref={rootRef} id="about" className="relative overflow-x-clip">
       <div className="mx-auto grid max-w-6xl items-center gap-16 px-6 pb-24 pt-16 md:px-12 md:pb-32 md:pt-20 lg:grid-cols-[1.1fr_1fr] lg:gap-20">
         <div className="ab-left">
           <GlassPill>02 · About me</GlassPill>
