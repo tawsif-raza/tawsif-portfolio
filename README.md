@@ -54,14 +54,14 @@ The page is made of sections, shown here in the order they appear on the site.
 | **Skills** (`#skills`) | Tech logos floating over a video. Hover a logo to freeze it. | `sections/SkillsFloat.jsx` |
 | **About** (`#about`) | My story, plus a live "NOW BUILDING" status card. | `sections/AboutSpace.jsx` |
 | **Experience** (`#experience`) | Work history as a timeline, then education and certifications, with a resume button. *Hidden until `data/experience.js` has an entry.* | `sections/Experience.jsx` |
-| **Work** (`#projects`) | Seven projects as a sticky stack of cards. Projects with no public link offer a walkthrough instead. The list lives in `data/projects.js`; the hero and Proof counts are read from it. | `sections/Projects.jsx` |
+| **Work** (`#projects`) | Seven projects as a sticky stack of cards. Projects with no public link offer a walkthrough instead. Every card has an "Ask the AI about this" button that opens the Ask Tawsif chat with a question about that project already sent. The list lives in `data/projects.js`; the hero and Proof counts are read from it. | `sections/Projects.jsx` |
 | **Services** (`#services`) | What I can build for clients, and how an engagement runs in three steps. | `sections/Services.jsx` |
 | **Methodology** | "How I build AI systems": a step-by-step process, with a small 3D scene on capable devices. | `sections/EngineeringMethodology.jsx` |
-| **Architecture** | Interactive blueprints of systems in production, with their failure fallbacks. | `sections/ArchitectureShowcase.jsx` |
+| **Architecture** | Interactive blueprints of systems in production, with their failure fallbacks. "Run a sample task" steps a scripted task through the stages and stops at the human approval gate; it is a simulation on sample data, edited in `data/demoRuns.js`. | `sections/ArchitectureShowcase.jsx`, `components/AgentRun.jsx` |
 | **Proof** | Four figures taken from the projects above. | `sections/EngineeringImpact.jsx` |
 | **GitHub activity** | My latest repos, fetched at build time. | `components/GithubActivity.jsx` |
 | **Testimonials** | *Hidden until a real quote is added.* | `sections/Testimonials.jsx` |
-| **Contact** (`#contact`) | A contact form that sends to my inbox. | `sections/Contact.jsx` |
+| **Contact** (`#contact`) | A contact form that sends to my inbox. The visitor first picks "I need something built" or "I'm hiring for a role", then taps a few answers that are written into the message for them. The questions and answers live in `data/contactBrief.js`. | `sections/Contact.jsx` |
 | **Footer** | Links, plus the "Soft Stack" drawer. | `sections/Footer.jsx` |
 
 <table>
@@ -431,7 +431,8 @@ An honest list, mirrored from [STATUS.md](STATUS.md) plus what a full audit of t
 
 - **No automated tests and no CI workflow.** `.github/` does not exist, so nothing checks a push except you running `lint` and `build`.
 - **Real-device testing is limited.** So far only build, lint and dev-server checks, not real phones or Safari/Firefox.
-- **Chat assistant can be slow to start.** Ask Tawsif runs on a free server that sleeps when idle. The page pings it on load to give it a head start, but the first reply can still take a while.
+- **Chat assistant can be slow to start.** Ask Tawsif runs on a free server that sleeps when idle. The page pings it on load to give it a head start, but the first reply can still take a while. The server only answers the live address, so in `npm run dev` the chat opens but every question fails.
+- **Voice in the chat depends on the browser.** The mic button uses the browser's own speech recognition (Chrome, Edge, Safari; not Firefox) and is hidden where it is missing. Answers are read back with the browser's own voice.
 
 ---
 

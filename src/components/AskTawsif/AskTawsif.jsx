@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { ArrowUp, X } from "lucide-react";
+import { ArrowUp, Mic, Volume2, VolumeX, X } from "lucide-react";
 import { ChatFailedError, RateLimitedError, confirmLead, streamChat, wakeServer } from "./api";
 import { EXAMPLE_QUESTIONS, FALLBACK_CONTACT, MAX_MESSAGE_CHARS, WAKE_NOTICE_MS } from "./config";
+import { ASK_EVENT } from "./ask";
 import { ContactButtons, DraftConfirm, ProjectCard } from "./ChatParts";
 import SafeMarkdown from "./SafeMarkdown";
 
@@ -16,6 +17,38 @@ const TOO_SLOW = "The assistant took too long to answer. Please try again in a m
 const WAKE_PING_EVERY_MS = 60000;
 const PHONE = "(max-width: 640px)";                // keep in sync with the @media rule in index.css
 const FOCUSABLE = "button:not([disabled]), a[href], textarea:not([disabled])";
+
+// Voice, both built into the browser (no server, no key): speech recognition turns a spoken question into
+// text, and speech synthesis reads the answer back. Each control only shows where the browser supports it
+// (recognition: Chrome, Edge, Safari; not Firefox).
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+const CAN_READ_ALOUD = "speechSynthesis" in window && typeof window.SpeechSynthesisUtterance === "function";
+const MIC_BLOCKED = "Microphone access is blocked. Allow it in the browser to ask by voice.";
+const MIC_SILENT = "I didn't catch that. Tap the mic and try again.";
+const MAX_SPOKEN_CHARS = 1200;
+
+// Answers arrive as Markdown; read the words, not the symbols.
+function plainText(markdown) {
+  return markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/[*_`#>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function readAloud(markdown) {
+  if (!CAN_READ_ALOUD) return;
+  const text = plainText(markdown).slice(0, MAX_SPOKEN_CHARS);
+  if (!text) return;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+}
+
+const stopReading = () => {
+  if (CAN_READ_ALOUD) window.speechSynthesis.cancel();
+};
 
 function formatWait(seconds) {
   if (seconds >= 3600) return `about ${Math.ceil(seconds / 3600)} h`;
@@ -69,6 +102,11 @@ export default function AskTawsif() {
   const [blockedUntil, setBlockedUntil] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const [fullScreen, setFullScreen] = useState(() => window.matchMedia(PHONE).matches);
+  const [listening, setListening] = useState(false);
+  const [micNote, setMicNote] = useState(null);
+  const [speaking, setSpeaking] = useState(false);   // "read answers aloud" is on
+  const speakingRef = useRef(false);                 // same value, readable from a send() already in flight
+  const recognitionRef = useRef(null);
 
   const sessionRef = useRef(null);
   const lastIdRef = useRef(0);                     // message ids; a ref, so they never repeat within a visit
@@ -112,8 +150,10 @@ export default function AskTawsif() {
   }, []);
 
   const returnFocusRef = useRef(false);
+  const quietRef = useRef(() => {});               // stops the mic and any answer being read; set further down
   const closePanel = () => {
     returnFocusRef.current = true;
+    quietRef.current();
     setOpen(false);
   };
 
@@ -136,6 +176,7 @@ export default function AskTawsif() {
     const onKey = (e) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
       returnFocusRef.current = true;                 // = closePanel(), from stable values only
+      quietRef.current();
       setOpen(false);
     };
     document.addEventListener("keydown", onKey);
@@ -258,6 +299,8 @@ export default function AskTawsif() {
     // "answered in" is what the visitor waited (wake-up included), not the server's own time (done.ms)
     const sentAt = performance.now();
     let started = false;
+    let answer = "";                               // the answer's text so far, for reading aloud at the end
+    let failed = false;
     const wakeNotice = setTimeout(() => {
       if (!started) patch(botId, { waking: true });
     }, WAKE_NOTICE_MS);
@@ -271,10 +314,14 @@ export default function AskTawsif() {
             clearTimeout(wakeNotice);
             patch(botId, { waking: false });
           }
+          if (event.type === "token") answer += String(event.text ?? "");
+          else if (event.type === "replace") answer = String(event.text ?? "");
+          else if (event.type === "error") failed = true;
           handleEvent(botId, event);
         },
       });
     } catch (error) {
+      failed = true;
       if (error instanceof RateLimitedError) {
         setBlockedUntil(Date.now() + error.retryAfter * 1000);
         setNow(Date.now());
@@ -294,8 +341,75 @@ export default function AskTawsif() {
         error: m.error ?? (!m.text && !m.limited && !m.cards.length && !m.contact && !m.draft ? NO_ANSWER : null),
       }));
       setBusy(false);
+      if (speakingRef.current && !failed) readAloud(answer);
     }
   }
+
+  const setReadAloud = (on) => {
+    speakingRef.current = on;
+    setSpeaking(on);
+    if (!on) stopReading();
+  };
+
+  // Mic: tap to speak, tap again (or pause) to stop. The words show in the box as they are heard, the question
+  // is sent when listening ends, and the answer is read back, since someone who asked aloud expects to hear it.
+  const toggleMic = () => {
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+    const recognition = new Recognition();
+    let heard = "";
+    recognition.lang = navigator.language?.startsWith("en") ? navigator.language : "en-US";
+    recognition.interimResults = true;
+    recognition.onresult = (e) => {
+      heard = [...e.results].map((result) => result[0].transcript).join("");
+      setInput(heard.slice(0, MAX_MESSAGE_CHARS));
+    };
+    recognition.onerror = (e) => {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") setMicNote(MIC_BLOCKED);
+      else if (e.error === "no-speech") setMicNote(MIC_SILENT);
+    };
+    recognition.onend = () => {
+      recognitionRef.current = null;
+      setListening(false);
+      if (!heard.trim()) return;
+      setReadAloud(true);
+      askRef.current?.(heard);
+    };
+    recognitionRef.current = recognition;
+    stopReading();
+    setMicNote(null);
+    setListening(true);
+    try {
+      recognition.start();
+    } catch {
+      recognitionRef.current = null;
+      setListening(false);
+    }
+  };
+
+  // Closing the panel (or leaving the page) stops the mic and any answer being read.
+  // A question half heard at that point is dropped, not sent.
+  const dropMic = () => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+    recognition.onresult = null;
+    recognition.onend = null;
+    recognition.abort();
+    recognitionRef.current = null;
+  };
+  useEffect(() => {
+    quietRef.current = () => {
+      dropMic();
+      setListening(false);
+      stopReading();
+    };
+  });
+  useEffect(() => () => {
+    dropMic();
+    stopReading();
+  }, []);
 
   async function onDraftAction(botId, action) {
     const draft = messages.find((m) => m.id === botId)?.draft;
@@ -311,6 +425,23 @@ export default function AskTawsif() {
     }
   }
 
+  // A question sent from elsewhere on the page (see ask.js): open the panel and send it. If an answer is
+  // still streaming, or the visitor is rate limited, it goes into the box instead, ready to send.
+  const askRef = useRef(null);
+  useEffect(() => {
+    askRef.current = (question) => (busy || blocked ? setInput(question.slice(0, MAX_MESSAGE_CHARS)) : send(question));
+  });
+  useEffect(() => {
+    const onAsk = (e) => {
+      const question = e.detail?.question;
+      if (typeof question !== "string" || !question.trim()) return;
+      setOpen(true);
+      askRef.current?.(question);
+    };
+    window.addEventListener(ASK_EVENT, onAsk);
+    return () => window.removeEventListener(ASK_EVENT, onAsk);
+  }, []);
+
   const onInputKeyDown = (e) => {
     // Enter sends, Shift+Enter is a new line; never while an input method (e.g. Hindi typing) is composing.
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -321,9 +452,13 @@ export default function AskTawsif() {
 
   const hint = blocked
     ? `Message limit reached. You can send again in ${formatWait(waitLeft)}.`
-    : busy
-      ? "Answering..."
-      : "Enter to send · Shift+Enter for a new line";
+    : listening
+      ? "Listening... tap the mic when you're done"
+      : micNote
+        ? micNote
+        : busy
+          ? "Answering..."
+          : "Enter to send · Shift+Enter for a new line";
 
   return (
     <>
@@ -360,9 +495,23 @@ export default function AskTawsif() {
                 <p className="ask-head__sub">AI assistant · answers from his portfolio</p>
               </div>
             </div>
-            <button type="button" className="ask-icon-btn" aria-label="Close chat" onClick={closePanel}>
-              <X size={18} aria-hidden="true" />
-            </button>
+            <div className="ask-head__actions">
+              {CAN_READ_ALOUD && (
+                <button
+                  type="button"
+                  className="ask-icon-btn ask-icon-btn--still"
+                  aria-pressed={speaking}
+                  aria-label="Read answers aloud"
+                  title={speaking ? "Reading answers aloud: on" : "Reading answers aloud: off"}
+                  onClick={() => setReadAloud(!speaking)}
+                >
+                  {speaking ? <Volume2 size={17} aria-hidden="true" /> : <VolumeX size={17} aria-hidden="true" />}
+                </button>
+              )}
+              <button type="button" className="ask-icon-btn" aria-label="Close chat" onClick={closePanel}>
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
           </header>
 
           <ol
@@ -433,6 +582,19 @@ export default function AskTawsif() {
               aria-describedby={hintId}
               className="ask-input"
             />
+            {Recognition && (
+              <button
+                type="button"
+                className="ask-mic"
+                data-listening={listening}
+                aria-pressed={listening}
+                aria-label={listening ? "Stop listening" : "Ask by voice"}
+                disabled={(busy || blocked) && !listening}
+                onClick={toggleMic}
+              >
+                <Mic size={17} aria-hidden="true" />
+              </button>
+            )}
             <button type="submit" className="ask-send" disabled={!input.trim() || busy || blocked} aria-label="Send message">
               <ArrowUp size={18} aria-hidden="true" />
             </button>

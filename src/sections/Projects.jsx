@@ -6,7 +6,11 @@ import RevealText from "../components/RevealText";
 import Magnetic from "../components/Magnetic";
 import { PROJECTS, countByStatus } from "../data/projects";
 
+import { askTawsif } from "../components/AskTawsif/ask";
+
 const GITHUB = "https://github.com/tawsif-raza";
+
+const askAbout = (title) => askTawsif(`Tell me about the ${title} project: what it does and how it's built.`);
 
 const STATUS = {
   live: { label: "Live", cls: "status-badge--live" },
@@ -113,19 +117,23 @@ const StackCard = memo(function StackCard({ project, index, total, progress, red
               <li key={t} className="tech-pill">{t}</li>
             ))}
           </ul>
-          {cardLinks.length > 0 ? (
-            <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
-              {cardLinks.map((l) => (
+          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
+            {cardLinks.length > 0 ? (
+              cardLinks.map((l) => (
                 <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="work-card__link">
                   {l.label} <Arrow />
                 </a>
-              ))}
-            </div>
-          ) : (
-            <a href="#contact" className="work-card__link mt-6">
-              Private build · ask for a walkthrough <Arrow />
-            </a>
-          )}
+              ))
+            ) : (
+              <a href="#contact" className="work-card__link">
+                Private build · ask for a walkthrough <Arrow />
+              </a>
+            )}
+            {/* Opens the Ask Tawsif chat with a question about this project already sent. */}
+            <button type="button" className="work-card__link cursor-pointer" onClick={() => askAbout(title)}>
+              Ask the AI about this <Arrow />
+            </button>
+          </div>
         </div>
       </motion.article>
     </div>

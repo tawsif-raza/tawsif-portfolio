@@ -4,6 +4,7 @@ import { sectionNo } from "../data/experience";
 import RevealText from "../components/RevealText";
 import { canGoFullGL } from "../utils/canGoFullGL";
 import useNearViewport from "../hooks/useNearViewport";
+import AgentRun from "../components/AgentRun";
 
 const LivingSystemScene = lazy(() => import("../components/LivingSystemScene"));
 
@@ -191,7 +192,8 @@ export default function ArchitectureShowcase() {
 
       <p className="mb-10 max-w-xl text-[15px] leading-relaxed text-dim">
         Click any node in the pipeline below to inspect its operational role,
-        tech stack, execution mode, and fault-tolerance safeguards.
+        tech stack, execution mode, and fault-tolerance safeguards. Or run a
+        sample task and watch it move through every stage.
       </p>
 
       {/* Architecture Toggle Tabs */}
@@ -255,7 +257,7 @@ export default function ArchitectureShowcase() {
         )}
 
         {/* Pipeline Step Navigator - 2.5D Visualization */}
-        <div className="mb-12 w-full overflow-x-auto pb-10 pt-6 hide-scrollbar relative">
+        <div className="mb-6 w-full overflow-x-auto pb-10 pt-6 hide-scrollbar relative">
           <div className="flex min-w-[600px] items-center px-4 justify-between relative">
             {currentArch.nodes.map((node, idx) => {
               const isSelected = selectedNodeIndex === idx;
@@ -296,6 +298,9 @@ export default function ArchitectureShowcase() {
             })}
           </div>
         </div>
+
+        {/* Scripted sample run; drives the selected stage above and below. */}
+        <AgentRun key={currentArch.id} arch={currentArch} onStage={setSelectedNodeIndex} />
 
         {/* Node Inspector Details */}
         <div className="rounded-lg border border-line/50 bg-[#0d0f12] p-5 sm:p-6">

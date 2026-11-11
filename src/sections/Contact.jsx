@@ -6,10 +6,63 @@ import Magnetic from "../components/Magnetic";
 import SectionLabel from "../components/SectionLabel";
 import { sectionNo } from "../data/experience";
 
+import { CONTACT_MODES, composeBrief } from "../data/contactBrief";
+import { RESUME_URL, RESUME_FILENAME } from "../data/site";
+
 gsap.registerPlugin(ScrollTrigger);
+
+const MODE_KEY = "trk-contact-mode";
+
+// The visitor's last choice of "a build" or "a role", remembered in this browser.
+function savedModeId() {
+  try {
+    return localStorage.getItem(MODE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 export default function Contact() {
   const rootRef = useRef();
+  // One state object, so the picks and the lines they wrote into the message
+  // always change together.
+  const [form, setForm] = useState(() => {
+    const saved = savedModeId();
+    return {
+      modeId: CONTACT_MODES.some((m) => m.id === saved) ? saved : CONTACT_MODES[0].id,
+      picks: {},
+      message: "",
+    };
+  });
+  const { modeId, picks, message } = form;
+  const mode = CONTACT_MODES.find((m) => m.id === modeId);
+  const setMessage = (text) => setForm((f) => ({ ...f, message: text }));
+
+  // Swaps the lines the old picks wrote at the top of the message for the new
+  // ones; whatever the visitor typed after them stays. If they edited those
+  // lines, the message is left alone.
+  const withPicks = (f, nextModeId, nextPicks) => {
+    const modeOf = (id) => CONTACT_MODES.find((m) => m.id === id);
+    const before = composeBrief(modeOf(f.modeId), f.picks);
+    const after = composeBrief(modeOf(nextModeId), nextPicks);
+    const text = f.message.startsWith(before) ? after + f.message.slice(before.length) : f.message;
+    return { modeId: nextModeId, picks: nextPicks, message: text };
+  };
+
+  const choose = (name, option) => {
+    setForm((f) => withPicks(f, f.modeId, { ...f.picks, [name]: f.picks[name] === option ? undefined : option }));
+  };
+
+  const switchMode = (id) => {
+    if (id === modeId) return;
+    setForm((f) => withPicks(f, id, {}));
+    try {
+      localStorage.setItem(MODE_KEY, id);
+    } catch {
+      // Storage is blocked (private window): the choice just isn't remembered.
+    }
+  };
+
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
@@ -25,7 +78,7 @@ export default function Contact() {
         scrollTrigger: { trigger: rootRef.current, start: "top 75%", once: true },
       });
       tl.from(".contact-reveal", { opacity: 0, y: 24, duration: 0.7, stagger: 0.1 })
-        .from(".field, .contact-submit", { opacity: 0, y: 26, duration: 0.6, stagger: 0.1 }, "-=0.3")
+        .from(".brief, .field, .contact-submit", { opacity: 0, y: 26, duration: 0.6, stagger: 0.1 }, "-=0.3")
         .from(".c-card", { opacity: 0, x: 40, duration: 0.6, stagger: 0.12 }, "<0.1");
     }, rootRef);
     return () => ctx.revert();
@@ -100,6 +153,47 @@ export default function Contact() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className={launching ? "is-launching" : ""}>
+              {/* Quick picks: why the visitor is here, then a few taps that write the brief for them. */}
+              <div className="brief mb-8">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="What brings you here?">
+                  {CONTACT_MODES.map((m) => (
+                    <button
+                      key={m.id}
+                      type="button"
+                      aria-pressed={m.id === modeId}
+                      onClick={() => switchMode(m.id)}
+                      className={`filter-tab ${m.id === modeId ? "filter-tab--active font-medium" : "border-line/60"}`}
+                    >
+                      {m.tab}
+                    </button>
+                  ))}
+                </div>
+                {mode.groups.map((group) => (
+                  <div key={group.name} className="mt-5" role="group" aria-label={group.title}>
+                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em] text-faint">{group.title}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {group.options.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          aria-pressed={picks[group.name] === option}
+                          onClick={() => choose(group.name, option)}
+                          className={`brief-chip ${picks[group.name] === option ? "is-picked" : ""}`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                    {picks[group.name] && <input type="hidden" name={group.name} value={picks[group.name]} />}
+                  </div>
+                ))}
+                {mode.id === "hiring" && RESUME_URL && (
+                  <a href={RESUME_URL} download={RESUME_FILENAME} className="mt-5 inline-block text-[13px] text-accent underline-offset-4 hover:underline">
+                    Download my resume
+                  </a>
+                )}
+                <input type="hidden" name="enquiry" value={mode.tab} />
+              </div>
               <div className="field">
                 <input id="cf-name" type="text" name="name" required placeholder=" " className="field__input" autoComplete="name" />
                 <label htmlFor="cf-name" className="field__label">Your name</label>
@@ -111,8 +205,17 @@ export default function Contact() {
                 <span className="field__line" aria-hidden="true" />
               </div>
               <div className="field">
-                <textarea id="cf-message" name="message" required placeholder=" " className="field__input" rows="5" />
-                <label htmlFor="cf-message" className="field__label">Tell me about your project</label>
+                <textarea
+                  id="cf-message"
+                  name="message"
+                  required
+                  placeholder=" "
+                  className="field__input"
+                  rows="6"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <label htmlFor="cf-message" className="field__label">{mode.messageLabel}</label>
                 <span className="field__line" aria-hidden="true" />
               </div>
               {error && (
