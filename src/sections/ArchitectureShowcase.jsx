@@ -1,5 +1,6 @@
 import { lazy, Suspense, useMemo, useRef, useState } from "react";
 import SectionLabel from "../components/SectionLabel";
+import { sectionNo } from "../data/experience";
 import RevealText from "../components/RevealText";
 import { canGoFullGL } from "../utils/canGoFullGL";
 import useNearViewport from "../hooks/useNearViewport";
@@ -181,7 +182,7 @@ export default function ArchitectureShowcase() {
       aria-label="AI System Architectures"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-20 md:px-12"
     >
-      <SectionLabel number="06" title="SYSTEM ARCHITECTURE" />
+      <SectionLabel number={sectionNo(6)} title="SYSTEM ARCHITECTURE" />
 
       <RevealText
         text="Interactive blueprints of systems currently in production."

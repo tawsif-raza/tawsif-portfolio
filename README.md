@@ -53,8 +53,9 @@ The page is made of sections, shown here in the order they appear on the site.
 | **Hero** | Full-screen film background, headline, two buttons. | `sections/Hero.jsx` |
 | **Skills** (`#skills`) | Tech logos floating over a video. Hover a logo to freeze it. | `sections/SkillsFloat.jsx` |
 | **About** (`#about`) | My story, plus a live "NOW BUILDING" status card. | `sections/AboutSpace.jsx` |
+| **Experience** (`#experience`) | Work history as a timeline, then education and certifications, with a resume button. *Hidden until `data/experience.js` has an entry.* | `sections/Experience.jsx` |
 | **Work** (`#projects`) | Seven projects as a sticky stack of cards. Projects with no public link offer a walkthrough instead. The list lives in `data/projects.js`; the hero and Proof counts are read from it. | `sections/Projects.jsx` |
-| **Services** (`#services`) | What I can build for clients. | `sections/Services.jsx` |
+| **Services** (`#services`) | What I can build for clients, and how an engagement runs in three steps. | `sections/Services.jsx` |
 | **Methodology** | "How I build AI systems": a step-by-step process, with a small 3D scene on capable devices. | `sections/EngineeringMethodology.jsx` |
 | **Architecture** | Interactive blueprints of systems in production, with their failure fallbacks. | `sections/ArchitectureShowcase.jsx` |
 | **Proof** | Four figures taken from the projects above. | `sections/EngineeringImpact.jsx` |
@@ -76,7 +77,7 @@ The page is made of sections, shown here in the order they appear on the site.
 
 ### Small details worth knowing
 
-- **Command palette.** Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> (press it again to close), or tap the `[ Ctrl K ]` button in the nav on a phone. Commands are grouped into Navigation, Actions and Social; type a few letters (for example `con`) to filter, use the arrow keys, and press <kbd>Enter</kbd>. "Toggle sound" is a placeholder until the site has audio.
+- **Command palette.** Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd> (press it again to close), or tap the `[ Ctrl K ]` button in the nav on a phone. Commands are grouped into Navigation, Actions and Social; type a few letters (for example `con`) to filter, use the arrow keys, and press <kbd>Enter</kbd>. "Download resume" appears once a resume is added (see [Known gaps](#11-known-gaps)).
 - **Soft Stack drawer.** A slide-out panel opened from the footer (beliefs, soft skills, reading). It traps keyboard focus, closes on <kbd>Esc</kbd>, and locks page scroll while open.
 - **Honest contact form.** If sending fails, the form shows a visible error and a "send by email instead" link. It never pretends the message was sent.
 
@@ -148,15 +149,12 @@ tawsif-portfolio/
 │   ├── favicon.svg, favicon.ico, icon-*.png #   Icons for browser tabs and phones
 │   ├── apple-touch-icon.png    #   iPhone home-screen icon
 │   ├── og-image.png            #   Preview image shown when the link is shared
-│   └── manifest.json, robots.txt
+│   └── manifest.json, robots.txt, sitemap.xml
 │
 ├── scripts/
 │   ├── fetch-github-activity.mjs   # Runs before every build (see section 6)
 │   ├── gen-logo-assets.py          # Draws the TR logo and every icon (no source image needed)
-│   └── gen-brand-assets.py         # Makes the share image (og-image.png)
-│
-├── brand/
-│   └── tr-monogram-source.png  # The previous circuit-style logo (no longer used)
+│   └── gen-brand-assets.py         # Draws the share image (og-image.png) with the same TR mark
 │
 ├── docs/
 │   └── screenshots/            # The pictures used in this README
@@ -167,10 +165,9 @@ tawsif-portfolio/
     ├── index.css               # ★ Colours, fonts and shared styles (Tailwind @theme)
     ├── sections/               # Big page blocks (Hero, Projects, Contact, …)
     ├── components/             # Small reusable pieces (Nav, CommandPalette, …)
-    ├── data/                   # Logos, graph data, github-activity.json
+    ├── data/                   # projects, experience, site links, logos, graph data, github-activity.json
     ├── hooks/                  # useReducedMotion, useInViewport, useNearViewport
-    ├── utils/                  # canGoFullGL (is this device strong enough for 3D?)
-    └── dev/                    # Developer-only experiments (not part of the real site)
+    └── utils/                  # canGoFullGL (is this device strong enough for 3D?)
 ```
 
 **Rule of thumb:** a *section* is a big block of the page, and a *component* is a small piece used inside sections. To change the **order** of the page, edit `src/App.jsx`. To change the **content** of a block, edit its file in `src/sections/`.
@@ -356,7 +353,7 @@ const USERNAME = "tawsif-raza";
 
 ## 8. Deploying
 
-**The site is live on AWS Amplify at <https://main.dahjkchabvbri.amplifyapp.com/>.** There is no custom domain yet, and the address-based tags in the checklist below are still switched off.
+**The site is live on AWS Amplify at <https://main.dahjkchabvbri.amplifyapp.com/>.** There is no custom domain yet. The address-based tags (canonical link, link-preview image, sitemap) point at the Amplify address.
 
 ### Build settings (the same on every host)
 
@@ -371,32 +368,24 @@ Every static host asks the same three questions:
 
 Vercel, Netlify, Cloudflare Pages and AWS Amplify all work. Connect the GitHub repo, enter the settings above, and every push to `main` will rebuild the site.
 
-### First deploy checklist
+### If the address changes
 
-Some tags need the site's **full web address**: link previews on LinkedIn/WhatsApp/X, and the canonical URL for Google. A wrong address is worse than none, so they are switched off until you have the real one. Once you know it, use it everywhere `https://YOUR-DOMAIN` appears below:
+The site's full address is written in three files. If you move to a custom domain, change it in all three:
 
-1. **`index.html`**: find the commented block that starts with `Not deployed yet.`. Replace every `https://YOUR-DOMAIN` with your address and remove the `<!--` and `-->` around the tags.
-2. **`index.html` (JSON-LD)**: add your address to the `Person` data, right after `"jobTitle"`:
-   ```json
-   "url": "https://YOUR-DOMAIN/",
-   ```
-3. **`public/sitemap.xml`**: create this file:
-   ```xml
-   <?xml version="1.0" encoding="UTF-8"?>
-   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-     <url>
-       <loc>https://YOUR-DOMAIN/</loc>
-       <changefreq>monthly</changefreq>
-       <priority>1.0</priority>
-     </url>
-   </urlset>
-   ```
-4. **`public/robots.txt`**: add one line at the end:
-   ```text
-   Sitemap: https://YOUR-DOMAIN/sitemap.xml
-   ```
-5. **Test the share card**: paste your link into the [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/). You should see `public/og-image.png`.
-6. **Update the docs**: swap the "not deployed yet" badge at the top of this README for a link to the live site, and update `STATUS.md`.
+1. **`index.html`**: the block marked "Address-based tags" (canonical, `og:url`, `og:image`, `twitter:url`, `twitter:image`) and the `"url"` line in the JSON-LD.
+2. **`public/sitemap.xml`**: the `<loc>` line.
+3. **`public/robots.txt`**: the `Sitemap:` line.
+
+Then paste the new link into the [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/). You should see `public/og-image.png`.
+
+### Visitor analytics (optional)
+
+The site can load [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) (free, no cookies). It stays off until you give the build a site token:
+
+1. Create a Cloudflare account, add the site under **Web Analytics**, and copy the token from the snippet it shows.
+2. In the Amplify console, add an environment variable `VITE_CF_ANALYTICS_TOKEN` with that token, then redeploy.
+
+Without the variable no analytics script is loaded. It is never loaded in `npm run dev`.
 
 ---
 
@@ -407,9 +396,9 @@ This site has a lot of motion, so it is built to behave on weak devices and for 
 - **Respects `prefers-reduced-motion`.** If the visitor's system asks for less motion, animations are turned off or simplified. The hook (`hooks/useReducedMotion.js`) also reacts live if the setting changes while the page is open.
 - **Pauses what you cannot see.** Videos and canvas animations stop when they scroll off-screen or the tab is hidden (`hooks/useInViewport.js`).
 - **Smart 3D loading.** The heavy three.js scene (in Methodology and Architecture) is only downloaded on devices that can handle it, and only when it is about a screen away from view. The check (`utils/canGoFullGL.js`) needs WebGL2, 4+ CPU cores, 4+ GB of memory and no reduced-motion preference. On other devices the 3D box is simply left out, and the text around it explains everything.
-- **Adaptive video.** The hero has 1080p and 720p versions plus a poster image, so the first paint never waits for the video.
+- **Adaptive video.** The hero has 1080p (about 3.9 MB) and 720p versions plus a poster image, so the first paint never waits for the video.
 - **Keyboard friendly.** The command palette and the Soft Stack drawer trap focus, close on <kbd>Esc</kbd>, and return focus when they close.
-- **SEO basics.** Open Graph and Twitter titles and descriptions, JSON-LD `Person` data, `robots.txt`, a web manifest and a dedicated share image. The URL-based tags are added on first deploy (see [section 8](#8-deploying)).
+- **SEO basics.** Open Graph and Twitter titles and descriptions, JSON-LD `Person` data, `robots.txt`, a web manifest and a dedicated share image. The address-based tags and `sitemap.xml` use the live address (see [section 8](#8-deploying)).
 
 ---
 
@@ -433,17 +422,16 @@ An honest list, mirrored from [STATUS.md](STATUS.md) plus what a full audit of t
 
 **Content**
 
-- No resume download yet (the button was removed rather than point at a missing file). To add one, save the PDF as `public/resume.pdf` and set `RESUME_URL` at the top of `src/components/CommandPalette.jsx`; the "Download resume" command then appears in the palette.
+- **No resume or work history yet.** To add the resume, save the PDF as `public/resume.pdf` and set `RESUME_URL` in `src/data/site.js`; the button then appears in the Experience section, the footer and the command palette. To add work history, education and certifications, fill the lists in `src/data/experience.js`; the Experience section appears with the first role.
 - No testimonials yet (the section stays hidden until real quotes are added).
-- **Link previews are off.** The site is live, but the canonical link, link-preview image and sitemap are still switched off (see the [first deploy checklist](#first-deploy-checklist)).
+- **Project demos.** No project has a demo clip yet. Add `demo: "https://..."` to a project in `src/data/projects.js` and its card shows a "Watch demo" link.
+- **Analytics is off** until `VITE_CF_ANALYTICS_TOKEN` is set (see [section 8](#8-deploying)).
 
 **Engineering**
 
 - **No automated tests and no CI workflow.** `.github/` does not exist, so nothing checks a push except you running `lint` and `build`.
 - **Real-device testing is limited.** So far only build, lint and dev-server checks, not real phones or Safari/Firefox.
-- **Leftover code.** These files are not imported by the site: `components/AgentGraph`, `CapabilityStrip`, `CustomCursor`, `HeroScene`, `IntroCounter`, `NowPanel`, `ParticleNetwork`, `ProjectCard`, `ProjectGlyph`, and `sections/About`, `Skills`, `SkillsMarquee`. They are older versions of current sections and are safe to delete when you want a tidier repo.
-- **Dev spike ships in the build.** `spike.html` and `src/dev/` are a Phase 0 experiment, but `vite.config.js` still builds them into `dist/` (the config comment says to remove them). The one `npm run lint` warning comes from this folder.
-- **Heavy hero video.** `public/hero/hero-1080.mp4` is about 10 MB. It is fine for now, but it makes the repo and first clone bigger.
+- **Chat assistant can be slow to start.** Ask Tawsif runs on a free server that sleeps when idle. The page pings it on load to give it a head start, but the first reply can still take a while.
 
 ---
 

@@ -2,7 +2,8 @@
 // read their counts from here too, so the numbers can't drift apart.
 //
 // A card links to `link`, or to each entry of an optional
-// `links: [{ label, href }]`. With neither, it offers a walkthrough instead.
+// `links: [{ label, href }]`. An optional `demo` (address of a video) adds a
+// "Watch demo" link. With none of these, it offers a walkthrough instead.
 const BASE = import.meta.env.BASE_URL;
 
 export const PROJECTS = [

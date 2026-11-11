@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Magnetic from "../components/Magnetic";
 import RevealText from "../components/RevealText";
 import SectionLabel from "../components/SectionLabel";
+import { sectionNo } from "../data/experience";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -54,6 +55,22 @@ const SERVICES = [
   },
 ];
 
+// How an engagement runs, start to finish.
+const STEPS = [
+  {
+    title: "Scope",
+    desc: "You tell me the problem and the tools you already use. I come back with what I'd build and the build fee.",
+  },
+  {
+    title: "Build",
+    desc: "I build it against your real accounts and data, with a human approval step wherever something gets sent or published.",
+  },
+  {
+    title: "Run",
+    desc: "You get the working system and a walkthrough. Add a monthly retainer if you want it kept running and improved.",
+  },
+];
+
 export default function Services() {
   const rootRef = useRef();
 
@@ -77,7 +94,7 @@ export default function Services() {
       id="services"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-32 md:px-12"
     >
-      <SectionLabel number="04" title="SERVICES" />
+      <SectionLabel number={sectionNo(4)} title="SERVICES" />
 
       <RevealText
         text="If you need one of these built, that's what I do."
@@ -103,6 +120,19 @@ export default function Services() {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-14 border-t border-line pt-8">
+        <p className="mb-6 font-mono text-[10px] uppercase tracking-[0.12em] text-faint">How it works</p>
+        <ol className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {STEPS.map((step, i) => (
+            <li key={step.title}>
+              <p className="font-mono text-xs text-accent-dim">Step {i + 1}</p>
+              <h3 className="font-display mt-2 text-lg font-medium text-paper">{step.title}</h3>
+              <p className="mt-2 text-[14px] leading-relaxed text-dim">{step.desc}</p>
+            </li>
+          ))}
+        </ol>
       </div>
 
       <Magnetic>

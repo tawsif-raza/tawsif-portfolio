@@ -99,6 +99,18 @@ export default function AskTawsif() {
     }
   };
 
+  // The free server sleeps when idle. Ping it once the page has settled, so it
+  // is already waking by the time a visitor opens the chat.
+  useEffect(() => {
+    const ping = () => {
+      lastWakeRef.current = Date.now();
+      wakeServer();
+    };
+    const useIdle = typeof window.requestIdleCallback === "function";
+    const id = useIdle ? window.requestIdleCallback(ping, { timeout: 5000 }) : setTimeout(ping, 2500);
+    return () => (useIdle ? window.cancelIdleCallback(id) : clearTimeout(id));
+  }, []);
+
   const returnFocusRef = useRef(false);
   const closePanel = () => {
     returnFocusRef.current = true;

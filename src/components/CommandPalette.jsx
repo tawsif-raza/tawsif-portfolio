@@ -2,17 +2,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 const EMAIL = "tawsifk35@gmail.com";
+import { EXPERIENCE } from "../data/experience";
+import { RESUME_URL, RESUME_FILENAME } from "../data/site";
+
 const GITHUB = "https://github.com/tawsif-raza";
 const LINKEDIN = "https://www.linkedin.com/in/tawsif-raza-khan/";
-// Drop the PDF at public/resume.pdf and set this to `${import.meta.env.BASE_URL}resume.pdf`.
-// While it's null the "Download resume" command is simply not listed, so the
-// palette never offers a link to a file that doesn't exist (see STATUS.md).
-const RESUME_URL = null;
 
 const SECTIONS = [
   { id: "hero", label: "Go to Home" },
   { id: "skills", label: "Go to Skills" },
   { id: "about", label: "Go to About" },
+  ...(EXPERIENCE.length > 0 ? [{ id: "experience", label: "Go to Experience" }] : []),
   { id: "projects", label: "Go to Projects" },
   { id: "services", label: "Go to Services" },
   { id: "contact", label: "Go to Contact" },
@@ -27,7 +27,6 @@ export default function CommandPalette() {
   const [copiedEmail, setCopiedEmail] = useState(false);
   // Placeholder: nothing on the site plays audio yet. The toggle and its
   // label are wired so a future sound layer only has to read this value.
-  const [soundOn, setSoundOn] = useState(false);
 
   const inputRef = useRef();
   const listRef = useRef();
@@ -64,7 +63,7 @@ export default function CommandPalette() {
       close();
     };
 
-    // `label` is what's shown and can change (copy feedback, sound state);
+    // `label` is what's shown and can change (copy feedback);
     // `search` is what typing filters on and never changes, so a row can't
     // vanish from under the cursor the moment its label updates.
     const list = [
@@ -78,7 +77,7 @@ export default function CommandPalette() {
         run: () => {
           const a = document.createElement("a");
           a.href = RESUME_URL;
-          a.download = "Tawsif-Raza-Khan-Resume.pdf";
+          a.download = RESUME_FILENAME;
           a.click();
           close();
         },
@@ -99,21 +98,13 @@ export default function CommandPalette() {
           }
         },
       },
-      {
-        id: "sound",
-        group: "Actions",
-        label: `Toggle sound (${soundOn ? "on" : "off"})`,
-        search: "Toggle sound audio",
-        hint: "soon",
-        run: () => setSoundOn((v) => !v),
-      },
       { id: "github", group: "Social", label: "Open GitHub", search: "Open GitHub", hint: "↗", run: external(GITHUB) },
       { id: "linkedin", group: "Social", label: "Open LinkedIn", search: "Open LinkedIn", hint: "↗", run: external(LINKEDIN) },
     ];
     return list.filter(Boolean);
     // close/openPalette only touch state setters and refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [copiedEmail, soundOn, reduceMotion]);
+  }, [copiedEmail, reduceMotion]);
 
   // Flat, filtered list in group order: arrow keys walk straight across
   // group boundaries, and `selected` is an index into this array.

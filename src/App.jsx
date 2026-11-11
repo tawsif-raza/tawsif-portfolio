@@ -3,6 +3,7 @@ import Hero from "./sections/Hero";
 import AboutSpace from "./sections/AboutSpace";
 import SkillsFloat from "./sections/SkillsFloat";
 import Starfield from "./components/Starfield";
+import Experience from "./sections/Experience";
 import Projects from "./sections/Projects";
 import Services from "./sections/Services";
 import Testimonials from "./sections/Testimonials";
@@ -57,6 +58,7 @@ export default function App({ initialIntroDone = false }) {
               <SkillsFloat />
               <AboutSpace />
             </div>
+            <Experience />
             <Projects />
             <Services />
             <EngineeringMethodology />

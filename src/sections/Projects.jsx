@@ -1,6 +1,7 @@
 import { memo, useRef } from "react";
 import { motion, useScroll, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import SectionLabel from "../components/SectionLabel";
+import { sectionNo } from "../data/experience";
 import RevealText from "../components/RevealText";
 import Magnetic from "../components/Magnetic";
 import { PROJECTS, countByStatus } from "../data/projects";
@@ -54,10 +55,12 @@ const StackCard = memo(function StackCard({ project, index, total, progress, red
   const scale = useTransform([entryScale, pushScale], ([a, b]) => a * b);
   const imgY = useTransform(progress, [entryStart, pushEnd], ["-7%", "7%"]);
 
-  const { title, category, status, problem, approach, outcome, stack, link, links, image } = project;
+  const { title, category, status, problem, approach, outcome, stack, link, links, demo, image } = project;
   const s = STATUS[status];
-  const cardLinks =
-    links ?? (link ? [{ label: link.includes("github.com") ? "View code" : "View live", href: link }] : []);
+  const cardLinks = [
+    ...(links ?? (link ? [{ label: link.includes("github.com") ? "View code" : "View live", href: link }] : [])),
+    ...(demo ? [{ label: "Watch demo", href: demo }] : []),
+  ];
 
   const motionStyle = reduce
     ? { top: `${index * 22}px` }
@@ -113,7 +116,7 @@ const StackCard = memo(function StackCard({ project, index, total, progress, red
           {cardLinks.length > 0 ? (
             <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2">
               {cardLinks.map((l) => (
-                <a key={l.href} href={l.href} target="_blank" rel="noreferrer" data-cursor="View" className="work-card__link">
+                <a key={l.href} href={l.href} target="_blank" rel="noreferrer" className="work-card__link">
                   {l.label} <Arrow />
                 </a>
               ))}
@@ -140,7 +143,7 @@ export default function Projects() {
   return (
     <section id="projects" className="relative">
       <div className="mx-auto max-w-6xl px-6 pt-28 md:px-12 md:pt-36">
-        <SectionLabel number="03" title="Work" />
+        <SectionLabel number={sectionNo(3)} title="Work" />
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
           <div>
             <RevealText

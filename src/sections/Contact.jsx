@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import RevealText from "../components/RevealText";
 import Magnetic from "../components/Magnetic";
 import SectionLabel from "../components/SectionLabel";
+import { sectionNo } from "../data/experience";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -74,7 +75,7 @@ export default function Contact() {
       id="contact"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-32 md:px-12"
     >
-      <SectionLabel number="08" title="CONTACT" />
+      <SectionLabel number={sectionNo(8)} title="CONTACT" />
 
       <p className="contact-reveal mb-6 font-mono text-xs text-faint">
         Currently in Bengaluru, working with people anywhere.
@@ -167,7 +168,6 @@ export default function Contact() {
           <Magnetic>
             <a
               href="mailto:tawsifk35@gmail.com"
-              data-cursor="Email"
               className="glass-card c-card flex items-center gap-4 p-5"
             >
               <svg className="c-card__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#c6f432" strokeWidth="1.5">

@@ -40,3 +40,6 @@ Thumbs.db
 *.sw?
 
 portfolio-code.txt
+
+# Python cache from the asset scripts
+__pycache__/

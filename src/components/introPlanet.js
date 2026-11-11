@@ -255,7 +255,7 @@ function sampleName(text, vw, vh, visW, visH, count) {
 export async function createIntroPlanet(canvas, { text, assetBase = "/" }) {
   const loader = new TextureLoader();
   const [tDay, tNight, tClouds] = await Promise.all(
-    ["earth_atmos_2048.jpg", "earth_lights_2048.png", "earth_clouds_1024.png"].map((f) =>
+    ["earth_atmos_2048.jpg", "earth_lights_2048.jpg", "earth_clouds_1024.png"].map((f) =>
       loader.loadAsync(`${assetBase}intro/${f}`)
     )
   );

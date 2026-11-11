@@ -1,93 +1,60 @@
 """
-One-off generator for brand image assets referenced in the professionalism
-plan: apple-touch-icon.png, manifest icons, and the OG/social preview image.
-Not part of the build pipeline — run once, commit the output, done.
-Recreates the node-graph motif already used in public/favicon.svg so
-every icon/share-card stays visually consistent with the rest of the site.
-"""
-from PIL import Image, ImageDraw, ImageFont
+Generates the social share image (public/og-image.png, 1200x630): the name,
+role and tagline in the site's colours, with the TR mark on the right.
 
-BG = "#050504"
-AMBER = "#c98a3b"
-AMBER_DIM = "#6b4e22"
-PAPER = "#ede6d6"
-DIM = "#9a8f78"
+    python scripts/gen-brand-assets.py
+
+The mark is drawn by scripts/gen-logo-assets.py, so the share image always
+matches the logo. Not part of the build pipeline: run it, commit the output.
+"""
+import importlib.util
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "public" / "og-image.png"
+
+BG = "#08090b"  # --color-bg
+ACCENT = "#c6f432"  # --color-accent
+PAPER = "#f2f3ef"  # --color-paper
+DIM = "#a0a6af"  # --color-dim
+LINE = "#22262d"  # --color-line
 
 FONT_BOLD = "C:/Windows/Fonts/segoeuib.ttf"
 FONT_REG = "C:/Windows/Fonts/segoeui.ttf"
 
-# Node/edge layout in a 0-40 viewbox, matching favicon.svg exactly.
-NODES = [
-    (8, 20, 3, 1.0),
-    (20, 12, 2.4, 0.85),
-    (20, 28, 2.4, 0.85),
-    (32, 20, 3.2, 1.0),
-]
-EDGES = [
-    ((11, 20), (17, 14)),
-    ((11, 20), (17, 26)),
-    ((22, 13), (30, 19)),
-    ((22, 27), (30, 21)),
-]
+W, H = 1200, 630
 
 
-def draw_node_glyph(draw, ox, oy, scale):
-    for (x1, y1), (x2, y2) in EDGES:
-        draw.line(
-            [(ox + x1 * scale, oy + y1 * scale), (ox + x2 * scale, oy + y2 * scale)],
-            fill=AMBER_DIM,
-            width=max(1, round(1.4 * scale)),
-        )
-    for x, y, r, op in NODES:
-        cx, cy, rr = ox + x * scale, oy + y * scale, r * scale
-        color = AMBER if op >= 1.0 else _blend(AMBER, BG, op)
-        draw.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], fill=color)
+def load_logo_module():
+    spec = importlib.util.spec_from_file_location("gen_logo_assets", Path(__file__).with_name("gen-logo-assets.py"))
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def _blend(hex_fg, hex_bg, alpha):
-    fg = tuple(int(hex_fg[i : i + 2], 16) for i in (1, 3, 5))
-    bg = tuple(int(hex_bg[i : i + 2], 16) for i in (1, 3, 5))
-    return tuple(round(f * alpha + b * (1 - alpha)) for f, b in zip(fg, bg))
+def main():
+    img = Image.new("RGB", (W, H), BG)
 
+    # Soft lime glow behind the mark, like the site's accent lighting.
+    glow = Image.new("RGB", (W, H), BG)
+    ImageDraw.Draw(glow).ellipse((760, 120, 1180, 510), fill="#1b2410")  # --color-accent-soft
+    img = Image.blend(img, glow.filter(ImageFilter.GaussianBlur(90)), 0.9)
 
-def make_icon(size, path):
-    ss = 4  # supersample for clean anti-aliasing at small sizes
-    big = Image.new("RGB", (size * ss, size * ss), BG)
-    d = ImageDraw.Draw(big)
-    draw_node_glyph(d, 0, 0, (size * ss) / 40)
-    img = big.resize((size, size), Image.LANCZOS)
-    img.save(path)
-    print(f"wrote {path} ({size}x{size})")
+    mark = load_logo_module().render_mark(210)
+    img.paste(mark, (970 - mark.width // 2, H // 2 - mark.height // 2), mark)
 
-
-def make_og_image(path):
-    w, h = 1200, 630
-    img = Image.new("RGB", (w, h), BG)
-    d = ImageDraw.Draw(img)
-
-    # Larger node-graph motif, right-aligned, drawn at high res then composited.
-    ss = 4
-    glyph_size = 420
-    big = Image.new("RGBA", (glyph_size * ss, glyph_size * ss), (0, 0, 0, 0))
-    bd = ImageDraw.Draw(big)
-    draw_node_glyph(bd, 0, 0, (glyph_size * ss) / 40)
-    glyph = big.resize((glyph_size, glyph_size), Image.LANCZOS)
-    img.paste(glyph, (w - glyph_size - 60, (h - glyph_size) // 2), glyph)
-
-    title_font = ImageFont.truetype(FONT_BOLD, 64)
-    subtitle_font = ImageFont.truetype(FONT_BOLD, 30)
-    tagline_font = ImageFont.truetype(FONT_REG, 26)
-
+    draw = ImageDraw.Draw(img)
     x = 80
-    d.text((x, 220), "Tawsif Raza Khan", font=title_font, fill=PAPER)
-    d.text((x, 300), "AI/ML ENGINEER & AUTOMATION ARCHITECT", font=subtitle_font, fill=AMBER)
-    d.text((x, 350), "Agentic systems that run on their own.", font=tagline_font, fill=DIM)
+    draw.text((x, 196), "Tawsif Raza Khan", font=ImageFont.truetype(FONT_BOLD, 68), fill=PAPER)
+    draw.text((x, 296), "AI/ML ENGINEER  ·  AUTOMATION ARCHITECT", font=ImageFont.truetype(FONT_BOLD, 24), fill=ACCENT)
+    draw.text((x, 350), "Agentic systems that run on their own.", font=ImageFont.truetype(FONT_REG, 30), fill=DIM)
+    draw.line((x, 428, x + 96, 428), fill=LINE, width=2)
 
-    img.save(path)
-    print(f"wrote {path} ({w}x{h})")
+    img.save(OUT, optimize=True)
+    print(f"wrote {OUT.relative_to(ROOT)} {img.size}")
 
 
 if __name__ == "__main__":
-    # Icons now come from the TR monogram (scripts/gen-logo-assets.py);
-    # only the share image is still generated here.
-    make_og_image("public/og-image.png")
+    main()

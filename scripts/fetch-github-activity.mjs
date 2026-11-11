@@ -15,7 +15,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = join(__dirname, "..", "src", "data", "github-activity.json");
 const USERNAME = "tawsif-raza";
 // Repos that should never appear in the "recent activity" list.
-const EXCLUDED_REPOS = new Set(["jarvyhq-portfolio"]);
+const EXCLUDED_REPOS = new Set(["jarvyhq-portfolio", "Devin-Test"]);
 
 async function main() {
   try {

@@ -1,4 +1,5 @@
 import SectionLabel from "../components/SectionLabel";
+import { sectionNo } from "../data/experience";
 import RevealText from "../components/RevealText";
 import { PROJECTS, countByStatus } from "../data/projects";
 
@@ -38,7 +39,7 @@ export default function EngineeringImpact() {
       aria-label="Proof"
       className="reading-scrim reading-scrim--center relative mx-auto max-w-6xl overflow-hidden px-6 py-16 sm:py-20 md:px-12"
     >
-      <SectionLabel number="07" title="PROOF" />
+      <SectionLabel number={sectionNo(7)} title="PROOF" />
 
       <RevealText
         text="Numbers you can check against the work."

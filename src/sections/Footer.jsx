@@ -1,5 +1,6 @@
 import Magnetic from "../components/Magnetic";
 import SoftStackDrawer from "../components/SoftStackDrawer";
+import { RESUME_URL, RESUME_FILENAME } from "../data/site";
 
 const SOCIAL = [
   {
@@ -83,6 +84,18 @@ export default function Footer() {
             Connect
           </h4>
           <div className="flex flex-col gap-3">
+            {RESUME_URL && (
+              <a
+                href={RESUME_URL}
+                download={RESUME_FILENAME}
+                className="flex items-center gap-2.5 text-dim transition hover:text-accent"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span className="font-mono text-[12px]">Download resume</span>
+              </a>
+            )}
             {SOCIAL.map((s) => (
               <a
                 key={s.label}
