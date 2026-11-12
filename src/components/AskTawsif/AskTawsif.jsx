@@ -14,7 +14,6 @@ const WAKING = "Waking up the assistant, this can take up to a minute on the fre
 const NO_ANSWER = "Sorry, no answer came back. Please try again.";
 const UNREACHABLE = "Sorry, I couldn't reach the assistant just now. Please try again in a moment, or reach Tawsif directly:";
 const TOO_SLOW = "The assistant took too long to answer. Please try again in a moment, or reach Tawsif directly:";
-const WAKE_PING_EVERY_MS = 60000;
 const PHONE = "(max-width: 640px)";                // keep in sync with the @media rule in index.css
 const FOCUSABLE = "button:not([disabled]), a[href], textarea:not([disabled])";
 
@@ -111,7 +110,6 @@ export default function AskTawsif() {
   const sessionRef = useRef(null);
   const lastIdRef = useRef(0);                     // message ids; a ref, so they never repeat within a visit
   const newId = () => `ask-${++lastIdRef.current}`;
-  const lastWakeRef = useRef(0);
   const launcherRef = useRef();
   const panelRef = useRef();
   const inputRef = useRef();
@@ -131,23 +129,11 @@ export default function AskTawsif() {
 
   const openPanel = () => {
     setOpen(true);
-    if (Date.now() - lastWakeRef.current > WAKE_PING_EVERY_MS) {
-      lastWakeRef.current = Date.now();
-      wakeServer();
-    }
+    wakeServer();
   };
 
-  // The free server sleeps when idle. Ping it once the page has settled, so it
-  // is already waking by the time a visitor opens the chat.
-  useEffect(() => {
-    const ping = () => {
-      lastWakeRef.current = Date.now();
-      wakeServer();
-    };
-    const useIdle = typeof window.requestIdleCallback === "function";
-    const id = useIdle ? window.requestIdleCallback(ping, { timeout: 5000 }) : setTimeout(ping, 2500);
-    return () => (useIdle ? window.cancelIdleCallback(id) : clearTimeout(id));
-  }, []);
+  // The free server sleeps when idle; main.jsx already pings it on page load, so it is waking
+  // long before a visitor opens the chat. Opening the panel pings again (throttled in api.js).
 
   const returnFocusRef = useRef(false);
   const quietRef = useRef(() => {});               // stops the mic and any answer being read; set further down

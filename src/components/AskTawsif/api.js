@@ -37,8 +37,14 @@ function rateLimited(response, body) {
   );
 }
 
-// Fire and forget: a sleeping free server starts waking while the visitor is still typing.
+// Fire and forget: a sleeping free server takes up to a minute to wake, so start it as early as possible.
+// Called on page load (main.jsx) and again when the panel opens; at most one ping a minute per tab.
+const WAKE_PING_EVERY_MS = 60000;
+let lastWake = 0;
+
 export function wakeServer() {
+  if (Date.now() - lastWake < WAKE_PING_EVERY_MS) return;
+  lastWake = Date.now();
   fetch(`${ASK_TAWSIF_API}/health`, { cache: "no-store" }).catch(() => {});
 }
 

@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { wakeServer } from './components/AskTawsif/api'
+
+// Start waking the free Ask Tawsif server now, so it is warm by the time a visitor opens the chat.
+wakeServer()
 
 // Cloudflare Web Analytics (no cookies). Loaded only in the production build
 // and only when the site token is set as VITE_CF_ANALYTICS_TOKEN at build time.
