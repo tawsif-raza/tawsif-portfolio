@@ -1,7 +1,7 @@
 """
 Generates every logo/favicon asset for the "TR" monogram.
 
-    python scripts/gen-logo-assets.py
+    uv run scripts/gen-logo-assets.py
 
 The mark is defined below as a handful of strokes on a 64-unit grid, in the
 site's own colours (lime T, paper-white R), so it needs no source image: the
@@ -20,6 +20,7 @@ Outputs (all committed; not part of the build pipeline):
   public/icon-512.png         manifest icon, full-bleed site background
   public/apple-touch-icon.png 180x180, full-bleed (iOS rounds it itself)
 """
+
 import math
 from pathlib import Path
 
@@ -44,8 +45,10 @@ SS = 8  # supersampling factor for the PNG renders
 
 def arc(cx, cy, r, a0, a1, steps=24):
     return [
-        (cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / steps)),
-         cy + r * math.sin(math.radians(a0 + (a1 - a0) * i / steps)))
+        (
+            cx + r * math.cos(math.radians(a0 + (a1 - a0) * i / steps)),
+            cy + r * math.sin(math.radians(a0 + (a1 - a0) * i / steps)),
+        )
         for i in range(steps + 1)
     ]
 
@@ -137,7 +140,7 @@ def draw_strokes(draw, letter, fill, scale, dx, dy):
 
 
 def hex_rgb(h):
-    return tuple(int(h[i:i + 2], 16) for i in (1, 3, 5))
+    return tuple(int(h[i : i + 2], 16) for i in (1, 3, 5))
 
 
 def draw_mark(img, scale, dx, dy):
@@ -155,7 +158,7 @@ def draw_mark(img, scale, dx, dy):
         column = Image.new("RGB", (1, img.height))
         for y in range(img.height):
             t = min(1.0, max(0.0, (y - y0) / (y1 - y0)))
-            column.putpixel((0, y), tuple(round(a + (b - a) * t) for a, b in zip(top, bottom)))
+            column.putpixel((0, y), tuple(round(a + (b - a) * t) for a, b in zip(top, bottom, strict=True)))
         img.paste(column.resize(img.size), (0, 0), mask)
 
 
@@ -165,7 +168,7 @@ def render_mark(height):
     size = (round(MARK_W * scale), round(MARK_H * scale))
     img = Image.new("RGBA", size, (0, 0, 0, 0))
     draw_mark(img, scale, -X0, -Y0)
-    return img.resize((round(size[0] / SS), height), Image.LANCZOS)
+    return img.resize((round(size[0] / SS), height), Image.Resampling.LANCZOS)
 
 
 def render_tile(size, rounded, fill):
@@ -182,7 +185,7 @@ def render_tile(size, rounded, fill):
     dx = (big / scale - MARK_W) / 2 - X0
     dy = (big / scale - MARK_H) / 2 - Y0
     draw_mark(img, scale, dx, dy)
-    return img.resize((size, size), Image.LANCZOS)
+    return img.resize((size, size), Image.Resampling.LANCZOS)
 
 
 def main():

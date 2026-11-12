@@ -15,7 +15,12 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "prebuild": "node scripts/fetch-github-activity.mjs"
+    "prebuild": "node scripts/fetch-github-activity.mjs",
+    "assets:logo": "uv run scripts/gen-logo-assets.py",
+    "assets:og": "uv run scripts/gen-brand-assets.py",
+    "py:lint": "uv run ruff check .",
+    "py:format": "uv run ruff format .",
+    "py:types": "uv run ty check"
   },
   "dependencies": {
     "@react-three/fiber": "^9.8.1",

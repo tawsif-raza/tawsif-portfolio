@@ -2,11 +2,12 @@
 Generates the social share image (public/og-image.png, 1200x630): the name,
 role and tagline in the site's colours, with the TR mark on the right.
 
-    python scripts/gen-brand-assets.py
+    uv run scripts/gen-brand-assets.py
 
 The mark is drawn by scripts/gen-logo-assets.py, so the share image always
 matches the logo. Not part of the build pipeline: run it, commit the output.
 """
+
 import importlib.util
 from pathlib import Path
 
@@ -29,6 +30,8 @@ W, H = 1200, 630
 
 def load_logo_module():
     spec = importlib.util.spec_from_file_location("gen_logo_assets", Path(__file__).with_name("gen-logo-assets.py"))
+    if spec is None or spec.loader is None:
+        raise ImportError("cannot load scripts/gen-logo-assets.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

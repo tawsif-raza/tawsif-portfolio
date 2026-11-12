@@ -1,0 +1,20 @@
+[project]
+name = "tawsif-portfolio"
+version = "0.1.0"
+description = "Python tooling for the portfolio (asset generator scripts)"
+requires-python = ">=3.12"
+dependencies = [
+    "pillow>=13.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.4",
+    "ty>=0.0.101",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+extend-select = ["I", "B", "UP"]

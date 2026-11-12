@@ -153,8 +153,8 @@ tawsif-portfolio/
 │
 ├── scripts/
 │   ├── fetch-github-activity.mjs   # Runs before every build (see section 6)
-│   ├── gen-logo-assets.py          # Draws the TR logo and every icon (no source image needed)
-│   └── gen-brand-assets.py         # Draws the share image (og-image.png) with the same TR mark
+│   ├── gen-logo-assets.py          # Draws the TR logo and every icon (npm run assets:logo)
+│   └── gen-brand-assets.py         # Draws the share image (og-image.png) with the same TR mark (npm run assets:og)
 │
 ├── docs/
 │   └── screenshots/            # The pictures used in this README
